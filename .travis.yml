@@ -1,0 +1,12 @@
+language: node_js
+node_js:
+- '12'
+install: npm install
+branches:
+  only:
+  - master
+deploy:
+  provider: heroku
+  app: wfh-backend
+  api_key:
+    secure: dJVnblAb2rK8tbb6+yQIrGfUyQLqiBwIfUsMnFe9Z0V4YKHgTi0XmQiktWwfMXFgDUkKtAGbCMWIZLV0zuU8R+Uim3ulRgSy4J7wtmQefuGzyP7Z8CzJVhu22pVCW9ZQjyuYeevvodiRI1je/ftkJi1UoGVYTD9nNKkT0q4hGk+U5PGGj2gXY0U/GUhGAf0PfhFdB1f4413kWm85Af/uOhMwIn7iu63JEXSvIaOn51d2xjecjD0uUkDu8VPj/9xzoxAAFLsV+lm8ShkA3cMyf7+j0GUYYkEEgkTnzBGzOGuMW4A2uGs+yiam3vquNsk+6toOb3pdwg+3/LLynQg4RfldsLOKfms5ENjF/Tgr1+WFLvJ2wJbD0Wk1bcuvM37xCC1opp44AG/XtJtzptYuWZFUC33T2x/iIDUR7TJu0renl3CM9QGETwCfvhqvDHJtPeWPeKuLdbKf58wc7FULnZuTawI8tgKZjvG7TBtyaBXLZ0HZBkgcVM2Z5MxSWaMrdzqkV17xpg9z7Em7vDTZP+qtYoxXh+gVOgXt8OLozBJokd2qeVLR1GWJ3Q0Wr+w5fqxBvYNECC2yejjqNy4ROUB7xGAo7xEOygQAYtocsgUPrSC+LR2KzByC3EFFqnKu3joj8SDLNoxYXaDAb6ybvDmQL1IoA55e5Hr8tLQ6Mo8=
