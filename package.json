@@ -13,6 +13,7 @@
     "@hapi/joi": "^17.1.1",
     "bcrypt": "^4.0.1",
     "config": "^3.3.1",
+    "eslint-plugin-import": "^2.20.2",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
     "log4js": "^6.2.1",
@@ -28,6 +29,7 @@
     "@authHandlers": "api/handlers/authHandlers",
     "@schemas": "api/schemas",
     "@utilits": "api/utilits",
-    "@data": "./data"
+    "@data": "./data",
+    "@routes": "api/routes"
   }
 }

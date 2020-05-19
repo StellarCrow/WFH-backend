@@ -3,11 +3,12 @@ const express = require('express');
 const app = express();
 require('module-alias/register');
 const config = require('config');
+const log4js = require('log4js');
 const authRouter = require('./api/routes/authRouter');
 
 const { PORT } = config.get('SERVER');
 const { LVL } = config.get('LOGGER');
-const log4js = require('log4js');
+
 
 const logger = log4js.getLogger();
 logger.level = LVL;
