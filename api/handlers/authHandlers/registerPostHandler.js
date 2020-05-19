@@ -1,11 +1,12 @@
 /* eslint-disable import/no-unresolved */
-const errorHandler = require('@utilits/errorHandler');
-const hashPassword = require('@utilits/hashPassword');
-const successResponse = require('@utilits/successResponse');
-const validateUser = require('@utilits/validateUser');
-const createUser = require('@utilits/createUser');
 const { SUCCESS, ERROR } = require('@data/logs');
-
+const {
+  errorHandler,
+  hashPassword,
+  successResponse,
+  validateUser,
+  createUser,
+} = require('@utilits');
 
 const registerPostHandler = async (req, res) => {
   const user = validateUser(req.body);

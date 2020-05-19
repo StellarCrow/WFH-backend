@@ -1,11 +1,12 @@
 /* eslint-disable import/no-unresolved */
 const { User } = require('@schemas/user.schema');
-const errorHandler = require('@utilits/errorHandler');
-const { ERROR } = require('@data/logs');
-const comparePasswords = require('@utilits/comparePasswords');
-const successResponse = require('@utilits/successResponse');
-const { SUCCESS } = require('@data/logs');
-const createToken = require('@utilits/createToken');
+const { ERROR, SUCCESS } = require('@data/logs');
+const {
+  errorHandler,
+  comparePasswords,
+  successResponse,
+  createToken,
+} = require('@utilits');
 
 const loginPostHandler = async (req, res) => {
   const { email, password } = req.body;
