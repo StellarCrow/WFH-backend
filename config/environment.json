@@ -1,0 +1,13 @@
+{
+  "SERVER": {
+    "PORT": "PORT"
+  },
+  "LOGGER": {
+    "LVL": "LOGGER_LEVEL"
+  },
+  "DB": {
+    "MONGO_URI": "MONGO_URI"
+  },
+  "SALT_ROUNDS": "SALT_ROUNDS",
+  "JWT_SECRET": "JWT_SECRET"
+}
