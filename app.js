@@ -11,7 +11,7 @@ const { LVL } = config.get('LOGGER');
 
 
 const logger = log4js.getLogger();
-logger.level = LVL;
+logger.level = process.env.LVL || LVL;
 const dbConnection = require('./api/utilits/dbConnection');
 const { ERROR } = require('./data/logs');
 
@@ -30,6 +30,6 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRouter);
 
-app.listen(PORT, () => {
-  logger.info(`Listening to requests on http://localhost:${PORT}`);
+app.listen(process.env.PORT || PORT, () => {
+  logger.info(`Listening to requests on ${process.env.PORT || PORT}`);
 });
