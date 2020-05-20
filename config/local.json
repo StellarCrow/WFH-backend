@@ -1,0 +1,13 @@
+{
+  "SERVER": {
+    "PORT": 3000
+  },
+  "LOGGER": {
+    "LVL": "info"
+  },
+  "DB" : {
+    "MONGO_URI" : "mongodb://127.0.0.1/wfh"
+  },
+  "SALT_ROUNDS": 10,
+  "JWT_SECRET": "local"
+}

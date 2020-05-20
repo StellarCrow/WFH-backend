@@ -1,0 +1,8 @@
+{
+  "SUCCESS_STATUSES": {
+    "DEFAULT": "200 OK"
+  },
+  "FAILED_STATUSES" : {
+    "DEFAULT": "400 Bad Request"
+  }
+}

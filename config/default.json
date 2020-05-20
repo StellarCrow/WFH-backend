@@ -1,0 +1,13 @@
+{
+  "SERVER": {
+    "PORT": 8080
+  },
+  "LOGGER": {
+    "LVL": "info"
+  },
+  "DB": {
+    "MONGO_URI": "DB_URL"
+  },
+  "SALT_ROUNDS": 10,
+  "JWT_SECRET": "default"
+}
