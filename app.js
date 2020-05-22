@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 
 const app = express();
 require('module-alias/register');
@@ -23,6 +24,7 @@ if (!mongoConnection) {
   process.exit();
 }
 
+app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
