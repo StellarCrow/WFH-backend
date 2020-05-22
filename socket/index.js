@@ -38,6 +38,16 @@ module.exports = function (socketIO) {
       });
     });
 
+    socket.on('new-chat-message', ({ message, code: room }) => {
+      socket.to(room).broadcast.emit('chat-message', {
+        answer: 'New chat message',
+        payload: {
+          username: globalRooms[room].users[socket.id],
+          message,
+        },
+      });
+    });
+
     // TODO: restrict user from being in different rooms at the same time
     socket.on('disconnect', () => {
       const room = Object.keys(globalRooms)
