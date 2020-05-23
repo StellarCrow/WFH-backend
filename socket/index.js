@@ -1,71 +1,85 @@
-const { generateRoomCode } = require('@utilits');
+const {generateRoomCode} = require('@utilits');
+const log4js = require('log4js');
+const logger = log4js.getLogger();
+const {Room, roomValidation} = require('./schemas/room.schema');
 
 module.exports = function (socketIO) {
-  console.log('Handling sockets');
+    console.log('Handling sockets');
 
-  const globalRooms = {}; // TODO: move to MongoDB
+    socketIO.on('connection', function (socket) {
+            logger.info('Connected...');
+            // TODO: decompose into separate handle,
+            // remember to bind socket to the function
 
-  socketIO.on('connection', function (socket) {
-    console.log('Connected...');
+            socket.on('create-room', ({username, code: room}) => {
+                logger.info('Creating new room:', room);
+                const createdRoom = {
+                    name: room,
+                    users: {
+                        [socket.id]: username
+                    }
+                };
+                const {value: validatedRoom, error} = roomValidation.validate(createdRoom);
+                if (error) {
+                    socket.emit('error-room-creating', {answer: "Room was not validated!", payload: room})
+                }
 
-    // TODO: decompose into separate handle,
-    // remember to bind socket to the function
-    socket.on('create-room', ({ username, code: room }) => {
-      console.log('Creating new room:', room);
-      // create room with specific code
-      const users = { [socket.id]: username };
-      globalRooms[room] = { users };
+                new Room(validatedRoom)
+                    .save()
+                    .then((newRoom) => socket.join(newRoom.name))
+                    .catch(error => console.log(error));
+            });
 
-      socket.join(room);
+            socket.on('new-user', async ({username, code: room}) => {
+                logger.info('Connecting new user:', username);
+                let roomToJoin;
 
-      console.log(globalRooms);
-    });
+                try {
+                     roomToJoin = await Room.findOne({name: room, $where: "Object.keys(this.users).length < 6"});
+                }catch(error) {
+                    console.log(error)
+                }
 
-    // TODO: handle utmost 6 users only
-    socket.on('new-user', ({ username, code: room }) => {
-      console.log('Connecting new user:', username);
-      socket.join(room);
+                if (!roomToJoin) {
+                    return socket.emit('error-room-join', {answer: "Can not join to room!", payload: room})
+                }
 
-      // add username to specific room in global room object
-      console.log(globalRooms);
-      globalRooms[room].users[socket.id] = username;
+                // emit event back to FE about completion
+                socket.join(roomToJoin.name);
+                socket.to(roomToJoin.name).broadcast.emit('new-user-connected', {
+                    answer: 'New user connected',
+                    payload: {username},
+                });
+            });
 
-      // emit event back to FE about completion
-      // TODO: create interface or function for SocketAnswer
-      socket.to(room).broadcast.emit('new-user-connected', {
-        answer: 'New user connected',
-        payload: { username },
-      });
-    });
+            socket.on('new-chat-message', ({message, code: room, username}) => {
+                socket.to(room).broadcast.emit('chat-message', {
+                    answer: 'New chat message',
+                    payload: {
+                        username,
+                        message,
+                    },
+                });
+            });
 
-    socket.on('new-chat-message', ({ message, code: room }) => {
-      socket.to(room).broadcast.emit('chat-message', {
-        answer: 'New chat message',
-        payload: {
-          username: globalRooms[room].users[socket.id],
-          message,
-        },
-      });
-    });
-
-    // TODO: restrict user from being in different rooms at the same time
-    socket.on('disconnect', () => {
-      const room = Object.keys(globalRooms)
-        .filter((key) => globalRooms[key].users[socket.id])
-        .pop();
-
-      if (room) {
-        // notify all in the room that user left
-        socket.to(room).broadcast.emit('user-disconnected', {
-          answer: 'User disconnected',
-          payload: {
-            username: globalRooms[room].users[socket.id],
-          },
-        });
-
-        // TODO: When moved to MongoDB, remove from database
-        delete globalRooms[room].users[socket.id];
-      }
-    });
-  });
+            // TODO: restrict user from being in different rooms at the same time
+        //TODO: Add an error handling for failed DB requests
+        //TODO: Add an  socket's connection lost handling
+            socket.on('disconnect',  () => {
+                    const users = {
+                        [socket.id]: {$exist: true}
+                    };
+                    Room.findOneAndUpdate(users, {$unset: `users[${socket.id}]`})
+                        .then((room) => {
+                                socket.to(room.name).broadcast.emit('user-disconnected', {
+                                    answer: 'User disconnected',
+                                    payload: {username: room.users[socket.id]}
+                                })
+                            }
+                        )
+                        .catch(error => console.log(error));
+                }
+            );
+        }
+    )
 };
