@@ -15,9 +15,9 @@ module.exports = function (socketIO) {
                 logger.info('Creating new room:', room);
                 const createdRoom = {
                     name: room,
-                    users: {
+                    users: [{
                         [socket.id]: username
-                    }
+                    }]
                 };
                 const {value: validatedRoom, error} = roomValidation.validate(createdRoom);
                 if (error) {
@@ -35,8 +35,10 @@ module.exports = function (socketIO) {
                 let roomToJoin;
 
                 try {
-                     roomToJoin = await Room.findOne({name: room, $where: "Object.keys(this.users).length < 6"});
-                }catch(error) {
+                    roomToJoin = await Room.findOneAndUpdate(
+                        {name: room, $where: "this.users.length < 6"},
+                        {$push: {users: {[socket.id]: username}}});
+                } catch (error) {
                     console.log(error)
                 }
 
@@ -63,20 +65,13 @@ module.exports = function (socketIO) {
             });
 
             // TODO: restrict user from being in different rooms at the same time
-        //TODO: Add an error handling for failed DB requests
-        //TODO: Add an  socket's connection lost handling
-            socket.on('disconnect',  () => {
-                    const users = {
-                        [socket.id]: {$exist: true}
-                    };
-                    Room.findOneAndUpdate(users, {$unset: `users[${socket.id}]`})
-                        .then((room) => {
-                                socket.to(room.name).broadcast.emit('user-disconnected', {
-                                    answer: 'User disconnected',
-                                    payload: {username: room.users[socket.id]}
-                                })
-                            }
-                        )
+            //TODO: Add an error handling for failed DB requests
+            //TODO: Add an  socket's connection lost handling
+            socket.on('disconnect', () => {
+                    Room.findOneAndUpdate(
+                        `this.users.contain(${socket.id})`,
+                        {$pull: {users: {$exists: [socket.id]}}})
+                        .then(console.log)
                         .catch(error => console.log(error));
                 }
             );
