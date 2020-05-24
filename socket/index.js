@@ -1,4 +1,3 @@
-const {generateRoomCode} = require('@utilits');
 const log4js = require('log4js');
 const logger = log4js.getLogger();
 const {Room, roomValidation} = require('./schemas/room.schema');
@@ -25,9 +24,14 @@ module.exports = function (socketIO) {
                 }
 
                 new Room(validatedRoom)
-                    .save()
-                    .then((newRoom) => socket.join(newRoom.name))
-                    .catch(error => console.log(error));
+                  .save()
+                  .then((newRoom) =>
+                    socket.join(newRoom.name).emit('room-created', {
+                        answer: 'New room created',
+                        payload: { username },
+                    })
+                  )
+                  .catch((error) => console.log(error));
             });
 
             socket.on('new-user', async ({username, code: room}) => {
@@ -46,6 +50,7 @@ module.exports = function (socketIO) {
 
                 // emit event back to FE about completion
                 socket.join(roomToJoin.name);
+                // socket.emit('create-peer');
                 socket.to(roomToJoin.name).broadcast.emit('new-user-connected', {
                     answer: 'New user connected',
                     payload: {username},
