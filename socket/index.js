@@ -68,9 +68,9 @@ module.exports = function (socketIO) {
             });
 
             // TODO: restrict user from being in different rooms at the same time
-        //TODO: Add an error handling for failed DB requests
-        //TODO: Add an  socket's connection lost handling
-            socket.on('disconnect',  () => {
+            // TODO: Add an error handling for failed DB requests
+            // TODO: Add an  socket's connection lost handling
+            socket.on('disconnect', () => {
                     const users = {
                         [socket.id]: {$exist: true}
                     };
@@ -85,6 +85,22 @@ module.exports = function (socketIO) {
                         .catch(error => console.log(error));
                 }
             );
+
+            socket.on('media-answer', (answer) => {
+                logger.info('Received media answer');
+                socket.to(room).broadcast.emit('media-back-answer', {
+                    answer: 'Sent media answer back',
+                    payload: answer,
+                });
+            });
+
+            socket.on('media-offer', (offer) => {
+                logger.info('Received media offer');
+                socket.to(room).broadcast.emit('media-back-offer', {
+                    answer: 'Sent media offer back',
+                    payload: offer,
+                });
+            });
         }
     )
 };
