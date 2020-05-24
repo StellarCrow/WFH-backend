@@ -1,11 +1,8 @@
-const {generateRoomCode} = require('@utilits');
 const log4js = require('log4js');
 const logger = log4js.getLogger();
 const {Room, roomValidation} = require('./schemas/room.schema');
 
 module.exports = function (socketIO) {
-    console.log('Handling sockets');
-
     socketIO.on('connection', function (socket) {
             logger.info('Connected...');
             // TODO: decompose into separate handle,
@@ -21,29 +18,33 @@ module.exports = function (socketIO) {
                 };
                 const {value: validatedRoom, error} = roomValidation.validate(createdRoom);
                 if (error) {
-                    socket.emit('error-room-creating', {answer: "Room was not validated!", payload: room})
+                    return errorHandler(socket, "Room was not validated!", room);
                 }
 
                 new Room(validatedRoom)
                     .save()
                     .then((newRoom) => socket.join(newRoom.name))
-                    .catch(error => console.log(error));
+                    .catch(error => errorHandler(socket, error.message));
             });
 
             socket.on('new-user', async ({username, code: room}) => {
-                logger.info('Connecting new user:', username);
                 let roomToJoin;
+
+                const connectedRooms = isUserInRoom(socket.id, username);
+                if (connectedRooms.length) {
+                    return errorHandler(socket,  "Can not join to room!", room);
+                }
 
                 try {
                     roomToJoin = await Room.findOneAndUpdate(
                         {name: room, $where: "this.users.length < 6"},
                         {$push: {users: {[socket.id]: username}}});
                 } catch (error) {
-                    console.log(error)
+                    return errorHandler(socket,  error.message, room);
                 }
 
                 if (!roomToJoin) {
-                    return socket.emit('error-room-join', {answer: "Can not join to room!", payload: room})
+                    return errorHandler(socket, "Can not join to room!",  room);
                 }
 
                 // emit event back to FE about completion
@@ -64,17 +65,25 @@ module.exports = function (socketIO) {
                 });
             });
 
-            // TODO: restrict user from being in different rooms at the same time
-            //TODO: Add an error handling for failed DB requests
-            //TODO: Add an  socket's connection lost handling
             socket.on('disconnect', () => {
                     Room.findOneAndUpdate(
                         `this.users.contain(${socket.id})`,
                         {$pull: {users: {$exists: [socket.id]}}})
-                        .then(console.log)
-                        .catch(error => console.log(error));
+                        .catch(error => errorHandler(socket, error.message));
                 }
             );
+            socket.on('error', ()=> {
+                return errorHandler(socket, "Connection error")
+            });
+            socket.on('connect_failed', (event)=> {
+                return errorHandler(socket, "Connection failed!")
+            })
         }
     )
+};
+isUserInRoom = async (socketID, username) => {
+    return await Room.find({users: {$elemMatch: {[socketID]: username}}});
+};
+errorHandler = (socket, answer, payload = null) => {
+    return socket.emit('error-event', {answer, payload});
 };
