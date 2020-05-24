@@ -1,12 +1,11 @@
 const log4js = require('log4js');
 const logger = log4js.getLogger();
 const {Room, roomValidation} = require('./schemas/room.schema');
+const {  isUserInRoom, errorHandler} = require('./utilits');
 
 module.exports = function (socketIO) {
     socketIO.on('connection', function (socket) {
             logger.info('Connected...');
-            // TODO: decompose into separate handle,
-            // remember to bind socket to the function
 
             socket.on('create-room', ({username, code: room}) => {
                 logger.info('Creating new room:', room);
@@ -81,9 +80,4 @@ module.exports = function (socketIO) {
         }
     )
 };
-isUserInRoom = async (socketID, username) => {
-    return await Room.find({users: {$elemMatch: {[socketID]: username}}});
-};
-errorHandler = (socket, answer, payload = null) => {
-    return socket.emit('error-event', {answer, payload});
-};
+
