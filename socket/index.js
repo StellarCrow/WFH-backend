@@ -26,7 +26,7 @@ module.exports = function (socketIO) {
                     .catch(error => errorHandler(socket, error.message));
             });
 
-            socket.on('new-user', async ({username, code: room}) => {
+            socket.on('new-user', async ({username, room}) => {
                 let roomToJoin;
 
                 const connectedRooms = isUserInRoom(socket.id, username);
@@ -37,7 +37,8 @@ module.exports = function (socketIO) {
                 try {
                     roomToJoin = await Room.findOneAndUpdate(
                         {name: room, $where: "this.users.length < 6"},
-                        {$push: {users: {[socket.id]: username}}});
+                        {$push: {users: {[socket.id]: username}}},
+                        {new: true});
                 } catch (error) {
                     return errorHandler(socket,  error.message, room);
                 }
@@ -47,10 +48,15 @@ module.exports = function (socketIO) {
                 }
 
                 // emit event back to FE about completion
+                const totalUsers = roomToJoin.users.reduce((acc, user) => {
+                    acc.push(Object.values(user));
+                    return acc;
+                },[]);
+
                 socket.join(roomToJoin.name);
-                socket.to(roomToJoin.name).broadcast.emit('new-user-connected', {
+                socket.to(roomToJoin.name).emit('new-user-connected', {
                     answer: 'New user connected',
-                    payload: {username},
+                    payload: totalUsers,
                 });
             });
 
