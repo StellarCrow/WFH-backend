@@ -31,7 +31,7 @@ module.exports = function (socketIO) {
                   .catch(error => errorHandler(socket, error.message));
             });
 
-            socket.on('new-user', async ({username, code: room}) => {
+            socket.on('new-user', async ({username, room}) => {
                 let roomToJoin;
 
                 const connectedRooms = isUserInRoom(socket.id, username);
@@ -42,7 +42,8 @@ module.exports = function (socketIO) {
                 try {
                     roomToJoin = await Room.findOneAndUpdate(
                         {name: room, $where: "this.users.length < 6"},
-                        {$push: {users: {[socket.id]: username}}});
+                        {$push: {users: {[socket.id]: username}}},
+                        {new: true});
                 } catch (error) {
                     return errorHandler(socket,  error.message, room);
                 }
@@ -51,11 +52,17 @@ module.exports = function (socketIO) {
                     return errorHandler(socket, "Can not join to room!",  room);
                 }
 
+                // Max's solution for multiple users in WS room issue
+                // const totalUsers = roomToJoin.users.reduce((acc, user) => {
+                //     acc.push(Object.values(user));
+                //     return acc;
+                // },[]);
+
                 // emit event back to FE about completion
                 socket.join(roomToJoin.name);
-                // socket.emit('create-peer');
-                socket.to(roomToJoin.name).broadcast.emit('new-user-connected', {
+                socket.to(roomToJoin.name).emit('new-user-connected', {
                     answer: 'New user connected',
+                    // payload: totalUsers, // Max's solution
                     payload: {username},
                 });
             });
