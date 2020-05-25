@@ -5,12 +5,14 @@ const { Schema } = mongoose;
 
 const Room = new Schema({
     name : { type: String, unique: true },
-    users:  Array
+    users:  Array,
+    usersInRoom : Number
 });
 
 const roomValidation = Joi.object({
     name: Joi.string().length(4).required(),
-    users: Joi.array().items(Joi.object()).min(1).max(6).required()
+    users: Joi.array().items(Joi.object()).min(1).max(6).required(),
+    usersInRoom : Joi.number().required()
 });
 
 

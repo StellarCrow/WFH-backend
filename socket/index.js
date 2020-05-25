@@ -13,7 +13,8 @@ module.exports = function (socketIO) {
                     name: room,
                     users: [{
                         [socket.id]: username
-                    }]
+                    }],
+                    usersInRoom : 1
                 };
                 const {value: validatedRoom, error} = roomValidation.validate(createdRoom);
                 if (error) {
@@ -29,14 +30,12 @@ module.exports = function (socketIO) {
             socket.on('new-user', async ({username, room}) => {
                 let roomToJoin;
 
-                const connectedRooms = isUserInRoom(socket.id, username);
+                const connectedRooms = await isUserInRoom(socket.id, username);
 
                 try {
                     roomToJoin = await Room.findOneAndUpdate(
-                        // TODO: Bug - $where can't be used in basic Mongo Atlas plan
-                        // {name: room, $where: "this.users.length < 6"},
-                        {name: room},
-                        {$push: {users: {[socket.id]: username}}},
+                        {name: room, usersInRoom : { $lte: 5}},
+                        {$push: {users: {[socket.id]: username}}, $inc: {usersInRoom : +1}},
                         {new: true});
                 } catch (error) {
                     return errorHandler(socket,  error.message, room);
@@ -46,7 +45,7 @@ module.exports = function (socketIO) {
                     return errorHandler(socket, "Can not join to room!",  room);
                 }
 
-                const totalUsers = roomToJoin.users.map(item => Object.values(item).pop())
+                const totalUsers = roomToJoin.users.map(item => Object.values(item).pop());
 
                 // emit event back to FE about completion
                 socket.join(roomToJoin.name);
@@ -73,7 +72,7 @@ module.exports = function (socketIO) {
                 logger.info('Disconnecting user...');
                 Room.findOneAndUpdate(
                     `this.users.contain(${socket.id})`,
-                    {$pull: {users: {$exists: [socket.id]}}})
+                    {$pull: {users: {[socket.id]: {$exists: true} }}, $inc: {usersInRoom: -1}})
                     .then((room) => {
                         socket.to(room.name).broadcast.emit('user-disconnected', {
                             answer: 'User disconnected',
