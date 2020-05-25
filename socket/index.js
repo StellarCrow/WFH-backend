@@ -8,7 +8,6 @@ module.exports = function (socketIO) {
             logger.info('Connected...');
 
             socket.on('create-room', ({username, code: room}) => {
-                logger.info('Creating new room:', room);
                 const createdRoom = createRoom(socket, room, username);
                 new Room(createdRoom)
                   .save()
@@ -51,6 +50,9 @@ module.exports = function (socketIO) {
             socket.on('disconnect', async () => {
                 logger.info('Disconnecting user...');
                 const updatedRoom  = await deleteUserFromRoom(socket);
+                if(!updatedRoom) {
+                    return errorHandler(socket, "Can not delete user from room");
+                }
 
                     if(updatedRoom.created_by === socket.id) {
                       return  deleteRoom(socket);
