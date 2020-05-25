@@ -46,18 +46,13 @@ module.exports = function (socketIO) {
                     return errorHandler(socket, "Can not join to room!",  room);
                 }
 
-                // TODO: Why do we store users as Array of single item Arrays ???
-                const totalUsers = roomToJoin.users.reduce((acc, user) => {
-                    acc.push(Object.values(user));
-                    return acc;
-                }, []);
-
-                logger.info(totalUsers);
+                const totalUsers = roomToJoin.users.map(item => Object.values(item).pop())
 
                 // emit event back to FE about completion
-                socket
-                    .join(roomToJoin.name)
-                    .to(roomToJoin.name)
+                socket.join(roomToJoin.name);
+
+                socketIO
+                    .in(roomToJoin.name)
                     .emit('new-user-connected', {
                         answer: 'New user connected',
                         payload: totalUsers,
