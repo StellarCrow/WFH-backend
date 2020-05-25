@@ -7,11 +7,14 @@ module.exports = function (socketIO) {
     socketIO.on('connection', function (socket) {
             logger.info('Connected...');
 
-            socket.on('create-room', ({username, code: room}) => {
-                const createdRoom = createRoom(socket, room, username);
+            socket.on('create-room', async ({username, code: room}) => {
+                const connectedRooms = await isUserInRoom(socket.id, username);
+                if (connectedRooms.length) {
+                    return errorHandler(socket, "Can not join to room!",  room);
+                }
+                const createdRoom = createRoom(socket, room);
                 new Room(createdRoom)
                   .save()
-                  .then((newRoom) => socket.join(newRoom.name))
                   .catch(error => errorHandler(socket, error.message));
             });
 
@@ -22,22 +25,24 @@ module.exports = function (socketIO) {
                 }
 
                 const roomToJoin = await addUserToRoom(socket, room, username);
+
                 if (!roomToJoin) {
                     return errorHandler(socket, "Can not join to room!",  room);
                 }
 
-                const totalUsers = roomToJoin.users.map(item => Object.values(item).pop());
-                socket.join(roomToJoin.name);
+                const totalUsers = await roomToJoin.users.map(item => Object.values(item).pop());
+                socket.join(room);
 
                 socketIO
-                    .in(roomToJoin.name)
+                    .in(room)
                     .emit('new-user-connected', {
                         answer: 'New user connected',
                         payload: totalUsers,
                     });
+
             });
 
-            socket.on('new-chat-message', ({message, code: room, username}) => {
+            socket.on('new-chat-message', ({message, room, username}) => {
                 socket.to(room).broadcast.emit('chat-message', {
                     answer: 'New chat message',
                     payload: {
@@ -55,7 +60,7 @@ module.exports = function (socketIO) {
                 }
 
                     if(updatedRoom.created_by === socket.id) {
-                      return  deleteRoom(socket);
+                       return deleteRoom(socket);
                     }
                     socket.to(updatedRoom.name).broadcast.emit('user-disconnected', {
                         answer: 'User disconnected',
