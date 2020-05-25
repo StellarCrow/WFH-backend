@@ -22,12 +22,7 @@ module.exports = function (socketIO) {
 
                 new Room(validatedRoom)
                   .save()
-                  .then((newRoom) =>
-                    socket.join(newRoom.name).emit('room-created', {
-                        answer: 'New room created',
-                        payload: { username },
-                    })
-                  )
+                  .then((newRoom) => socket.join(newRoom.name))
                   .catch(error => errorHandler(socket, error.message));
             });
 
@@ -35,36 +30,38 @@ module.exports = function (socketIO) {
                 let roomToJoin;
 
                 const connectedRooms = isUserInRoom(socket.id, username);
-                if (connectedRooms.length) {
-                    return errorHandler(socket,  "Can not join to room!", room);
-                }
 
                 try {
                     roomToJoin = await Room.findOneAndUpdate(
-                        {name: room, $where: "this.users.length < 6"},
+                        // TODO: Bug - $where can't be used in basic Mongo Atlas plan
+                        // {name: room, $where: "this.users.length < 6"},
+                        {name: room},
                         {$push: {users: {[socket.id]: username}}},
                         {new: true});
                 } catch (error) {
                     return errorHandler(socket,  error.message, room);
                 }
 
-                if (!roomToJoin) {
+                if (connectedRooms.length || !roomToJoin) {
                     return errorHandler(socket, "Can not join to room!",  room);
                 }
 
-                // Max's solution for multiple users in WS room issue
-                // const totalUsers = roomToJoin.users.reduce((acc, user) => {
-                //     acc.push(Object.values(user));
-                //     return acc;
-                // },[]);
+                // TODO: Why do we store users as Array of single item Arrays ???
+                const totalUsers = roomToJoin.users.reduce((acc, user) => {
+                    acc.push(Object.values(user));
+                    return acc;
+                }, []);
+
+                logger.info(totalUsers);
 
                 // emit event back to FE about completion
-                socket.join(roomToJoin.name);
-                socket.to(roomToJoin.name).emit('new-user-connected', {
-                    answer: 'New user connected',
-                    // payload: totalUsers, // Max's solution
-                    payload: {username},
-                });
+                socket
+                    .join(roomToJoin.name)
+                    .to(roomToJoin.name)
+                    .emit('new-user-connected', {
+                        answer: 'New user connected',
+                        payload: totalUsers,
+                    });
             });
 
             socket.on('new-chat-message', ({message, code: room, username}) => {
@@ -78,20 +75,18 @@ module.exports = function (socketIO) {
             });
 
             socket.on('disconnect', () => {
-                    Room.findOneAndUpdate(
-                        `this.users.contain(${socket.id})`,
-                        {$pull: {users: {$exists: [socket.id]}}})
-                        // TODO: add .then block to broadcast user-disconnected event like so ?
-                        // .then((room) => {
-                        //         socket.to(room.name).broadcast.emit('user-disconnected', {
-                        //             answer: 'User disconnected',
-                        //             payload: {username: room.users[socket.id]}
-                        //         })
-                        //     }
-                        // )
-                        .catch(error => errorHandler(socket, error.message));
-                }
-            );
+                logger.info('Disconnecting user...');
+                Room.findOneAndUpdate(
+                    `this.users.contain(${socket.id})`,
+                    {$pull: {users: {$exists: [socket.id]}}})
+                    .then((room) => {
+                        socket.to(room.name).broadcast.emit('user-disconnected', {
+                            answer: 'User disconnected',
+                            payload: {username: room.users[socket.id]}
+                        });
+                    })
+                    .catch(error => errorHandler(socket, error.message));
+            });
 
             socket.on('error', ()=> {
                 return errorHandler(socket, "Connection error")
