@@ -1,7 +1,7 @@
 const log4js = require('log4js');
 const logger = log4js.getLogger();
-const {Room, roomValidation} = require('./schemas/room.schema');
-const {  isUserInRoom, errorHandler} = require('./utilits');
+const {Room} = require('./schemas/room.schema');
+const {  isUserInRoom, errorHandler, deleteRoom, deleteUserFromRoom, addUserToRoom, createRoom} = require('./utilits');
 
 module.exports = function (socketIO) {
     socketIO.on('connection', function (socket) {
@@ -9,45 +9,25 @@ module.exports = function (socketIO) {
 
             socket.on('create-room', ({username, code: room}) => {
                 logger.info('Creating new room:', room);
-                const createdRoom = {
-                    name: room,
-                    users: [{
-                        [socket.id]: username
-                    }],
-                    usersInRoom : 1
-                };
-                const {value: validatedRoom, error} = roomValidation.validate(createdRoom);
-                if (error) {
-                    return errorHandler(socket, "Room was not validated!", room);
-                }
-
-                new Room(validatedRoom)
+                const createdRoom = createRoom(socket, room, username);
+                new Room(createdRoom)
                   .save()
                   .then((newRoom) => socket.join(newRoom.name))
                   .catch(error => errorHandler(socket, error.message));
             });
 
             socket.on('new-user', async ({username, room}) => {
-                let roomToJoin;
-
                 const connectedRooms = await isUserInRoom(socket.id, username);
-
-                try {
-                    roomToJoin = await Room.findOneAndUpdate(
-                        {name: room, usersInRoom : { $lte: 5}},
-                        {$push: {users: {[socket.id]: username}}, $inc: {usersInRoom : +1}},
-                        {new: true});
-                } catch (error) {
-                    return errorHandler(socket,  error.message, room);
+                if (connectedRooms.length) {
+                    return errorHandler(socket, "Can not join to room!",  room);
                 }
 
-                if (connectedRooms.length || !roomToJoin) {
+                const roomToJoin = await addUserToRoom(socket, room, username);
+                if (!roomToJoin) {
                     return errorHandler(socket, "Can not join to room!",  room);
                 }
 
                 const totalUsers = roomToJoin.users.map(item => Object.values(item).pop());
-
-                // emit event back to FE about completion
                 socket.join(roomToJoin.name);
 
                 socketIO
@@ -68,18 +48,18 @@ module.exports = function (socketIO) {
                 });
             });
 
-            socket.on('disconnect', () => {
+            socket.on('disconnect', async () => {
                 logger.info('Disconnecting user...');
-                Room.findOneAndUpdate(
-                    `this.users.contain(${socket.id})`,
-                    {$pull: {users: {[socket.id]: {$exists: true} }}, $inc: {usersInRoom: -1}})
-                    .then((room) => {
-                        socket.to(room.name).broadcast.emit('user-disconnected', {
-                            answer: 'User disconnected',
-                            payload: {username: room.users[socket.id]}
-                        });
-                    })
-                    .catch(error => errorHandler(socket, error.message));
+                const updatedRoom  = await deleteUserFromRoom(socket);
+
+                    if(updatedRoom.created_by === socket.id) {
+                      return  deleteRoom(socket);
+                    }
+                    socket.to(updatedRoom.name).broadcast.emit('user-disconnected', {
+                        answer: 'User disconnected',
+                        payload: {username: updatedRoom.users[socket.id]}
+                    });
+
             });
 
             socket.on('error', ()=> {
