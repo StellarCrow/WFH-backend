@@ -34,7 +34,7 @@ module.exports = function (socketIO) {
                 if (connectedRooms.length) {
                     return errorHandler(
                         socket,
-                        "Can not join to room! Room is full.",
+                        "Can not join to room! User is already in a room.",
                         room
                     );
                 }
