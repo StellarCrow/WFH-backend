@@ -1,16 +1,27 @@
 const log4js = require('log4js');
 const logger = log4js.getLogger();
 const {Room} = require('./schemas/room.schema');
-const {  isUserInRoom, errorHandler, deleteRoom, deleteUserFromRoom, addUserToRoom, createRoom} = require('./utilits');
+const {
+    roomsWhereUser,
+    errorHandler,
+    deleteRoom,
+    deleteUserFromRoom,
+    addUserToRoom,
+    createRoom
+} = require('./utilits');
 
 module.exports = function (socketIO) {
     socketIO.on('connection', function (socket) {
             logger.info('Connected...');
 
             socket.on('create-room', async ({username, code: room}) => {
-                const connectedRooms = await isUserInRoom(socket.id, username);
+                const connectedRooms = await roomsWhereUser(socket.id, username);
                 if (connectedRooms.length) {
-                    return errorHandler(socket, "Can not join to room!",  room);
+                    return errorHandler(
+                        socket,
+                        "Can not join to room! User is already in a room",
+                        room
+                    );
                 }
                 const createdRoom = createRoom(socket, room);
                 new Room(createdRoom)
@@ -19,15 +30,23 @@ module.exports = function (socketIO) {
             });
 
             socket.on('new-user', async ({username, room}) => {
-                const connectedRooms = await isUserInRoom(socket.id, username);
+                const connectedRooms = await roomsWhereUser(socket.id, username);
                 if (connectedRooms.length) {
-                    return errorHandler(socket, "Can not join to room!",  room);
+                    return errorHandler(
+                        socket,
+                        "Can not join to room! Room is full.",
+                        room
+                    );
                 }
 
                 const roomToJoin = await addUserToRoom(socket, room, username);
 
                 if (!roomToJoin) {
-                    return errorHandler(socket, "Can not join to room!",  room);
+                    return errorHandler(
+                        socket,
+                        "Can not join to room! No such room.",
+                        room
+                    );
                 }
 
                 const totalUsers = await roomToJoin.users.map(item => Object.values(item).pop());
