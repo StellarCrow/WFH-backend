@@ -7,7 +7,9 @@ const {
     deleteRoom,
     deleteUserFromRoom,
     addUserToRoom,
-    createRoom
+    createRoom,
+    getUsersInRoom,
+    checkForReconnection
 } = require('./utilits');
 
 module.exports = function (socketIO) {
@@ -15,13 +17,9 @@ module.exports = function (socketIO) {
             logger.info('Connected...');
 
             socket.on('create-room', async ({username, code: room}) => {
-                const connectedRooms = await roomsWhereUser(socket.id, username);
-                if (connectedRooms.length) {
-                    return errorHandler(
-                        socket,
-                        "Can not join to room! User is already in a room",
-                        room
-                    );
+                const roomWithUser = await roomsWhereUser(socket.id, username);
+                if (roomWithUser.length) {
+                    return checkForReconnection(socket, roomWithUser, room);
                 }
                 const createdRoom = createRoom(socket, room);
                 new Room(createdRoom)
@@ -30,33 +28,23 @@ module.exports = function (socketIO) {
             });
 
             socket.on('new-user', async ({username, room}) => {
-                const connectedRooms = await roomsWhereUser(socket.id, username);
-                if (connectedRooms.length) {
-                    return errorHandler(
-                        socket,
-                        "Can not join to room! User is already in a room.",
-                        room
-                    );
+                const roomWithUser = await roomsWhereUser(socket.id, username);
+                if (roomWithUser.length) {
+                    return checkForReconnection(socket, roomWithUser, room);
                 }
 
                 const roomToJoin = await addUserToRoom(socket, room, username);
 
                 if (!roomToJoin) {
-                    return errorHandler(
-                        socket,
-                        "Can not join to room! No such room.",
-                        room
-                    );
+                    return errorHandler( socket,"Can not join to room! No such room.", room);
                 }
 
-                const totalUsers = await roomToJoin.users.map(item => Object.values(item).pop());
                 socket.join(room);
-
                 socketIO
                     .in(room)
                     .emit('new-user-connected', {
                         answer: 'New user connected',
-                        payload: totalUsers,
+                        payload: getUsersInRoom(roomToJoin),
                     });
 
             });
