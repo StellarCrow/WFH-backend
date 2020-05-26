@@ -6,6 +6,7 @@ const addUserToRoom = require('./addUserToRoom');
 const createRoom = require('./createRoom');
 const getUsersInRoom = require('./getUsersInRoom');
 const checkForReconnection = require('./checkForReconnection');
+const findRoom = require('./findRoom');
 
 module.exports = {
     roomsWhereUser,
@@ -15,5 +16,6 @@ module.exports = {
     addUserToRoom,
     createRoom,
     getUsersInRoom,
-    checkForReconnection
+    checkForReconnection,
+    findRoom
 };

@@ -9,12 +9,14 @@ const {
     addUserToRoom,
     createRoom,
     getUsersInRoom,
-    checkForReconnection
+    checkForReconnection,
+    findRoom
 } = require('./utilits');
 
 module.exports = function (socketIO) {
     socketIO.on('connection', function (socket) {
             logger.info('Connected...');
+
 
             socket.on('create-room', async ({username, code: room}) => {
                 const roomWithUser = await roomsWhereUser(socket.id, username);
@@ -25,6 +27,14 @@ module.exports = function (socketIO) {
                 new Room(createdRoom)
                   .save()
                   .catch(error => errorHandler(socket, error.message));
+            });
+
+            socket.on('check-room', async(room) => {
+                const joinRoom = await findRoom(room);
+                if(!joinRoom || !joinRoom.length) {
+                    return errorHandler(socket, 'Can not join to room!', room)
+                }
+                socket.emit('room-available', {answer:'Join to room is possible', payload:room})
             });
 
             socket.on('new-user', async ({username, room}) => {
