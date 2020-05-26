@@ -25,16 +25,16 @@ module.exports = function (socketIO) {
                 }
                 const createdRoom = createRoom(socket, room);
                 new Room(createdRoom)
-                  .save()
-                  .catch(error => errorHandler(socket, error.message));
+                    .save()
+                    .catch(error => errorHandler(socket, error.message));
             });
 
-            socket.on('check-room', async(room) => {
+            socket.on('check-room', async (room) => {
                 const joinRoom = await findRoom(room);
-                if(!joinRoom || !joinRoom.length) {
+                if (!joinRoom || !joinRoom.length) {
                     return errorHandler(socket, 'Can not join to room!', room)
                 }
-                socket.emit('room-available', {answer:'Join to room is possible', payload:room})
+                socket.emit('room-available', {answer: 'Join to room is possible', payload: room})
             });
 
             socket.on('new-user', async ({username, room}) => {
@@ -46,7 +46,7 @@ module.exports = function (socketIO) {
                 const roomToJoin = await addUserToRoom(socket, room, username);
 
                 if (!roomToJoin) {
-                    return errorHandler( socket,"Can not join to room! No such room.", room);
+                    return errorHandler(socket, "Can not join to room! No such room.", room);
                 }
 
                 socket.join(room);
@@ -68,29 +68,32 @@ module.exports = function (socketIO) {
                     },
                 });
             });
+            socket.on('start-game', ({room}) => {
+                socketIO.to(room).emit('game-started', {answer: 'Game started', payload: null})
+            });
 
             socket.on('disconnect', async () => {
                 logger.info('Disconnecting user...');
-                const updatedRoom  = await deleteUserFromRoom(socket);
-                if(!updatedRoom) {
+                const updatedRoom = await deleteUserFromRoom(socket);
+                if (!updatedRoom) {
                     return errorHandler(socket, "Can not delete user from room");
                 }
 
-                    if(updatedRoom.created_by === socket.id) {
-                       return deleteRoom(socket);
-                    }
-                    socket.to(updatedRoom.name).broadcast.emit('user-disconnected', {
-                        answer: 'User disconnected',
-                        payload: {username: updatedRoom.users[socket.id]}
-                    });
+                if (updatedRoom.created_by === socket.id) {
+                    return deleteRoom(socket);
+                }
+                socket.to(updatedRoom.name).broadcast.emit('user-disconnected', {
+                    answer: 'User disconnected',
+                    payload: {username: updatedRoom.users[socket.id]}
+                });
 
             });
 
-            socket.on('error', ()=> {
+            socket.on('error', () => {
                 return errorHandler(socket, "Connection error")
             });
 
-            socket.on('connect_failed', (event)=> {
+            socket.on('connect_failed', (event) => {
                 return errorHandler(socket, "Connection failed!")
             });
 
