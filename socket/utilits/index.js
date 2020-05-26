@@ -4,6 +4,8 @@ const deleteRoom = require('./deleteRoom');
 const deleteUserFromRoom = require('./addUserFromRoom');
 const addUserToRoom = require('./addUserToRoom');
 const createRoom = require('./createRoom');
+const getUsersInRoom = require('./getUsersInRoom');
+const checkForReconnection = require('./checkForReconnection');
 
 module.exports = {
     roomsWhereUser,
@@ -11,5 +13,7 @@ module.exports = {
     deleteRoom,
     deleteUserFromRoom,
     addUserToRoom,
-    createRoom
+    createRoom,
+    getUsersInRoom,
+    checkForReconnection
 };
