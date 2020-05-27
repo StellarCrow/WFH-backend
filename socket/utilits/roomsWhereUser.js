@@ -1,8 +1,9 @@
 const {Room} = require('../schemas/room.schema');
 
 
-const roomsWhereUser = async (socketID, username) => {
-    return await Room.find({users: {$elemMatch: {[socketID]: username}}})
-
+const roomsWhereUser = async (socketId, username) => {
+    return await Room.find({
+        users: {$elemMatch: {socketId: socketId, username}}
+    });
 };
 module.exports = roomsWhereUser;
