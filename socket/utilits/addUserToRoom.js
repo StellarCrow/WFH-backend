@@ -5,9 +5,18 @@ const logger = log4js.getLogger();
 const addUserToRoom = async (socket, room, username) => {
     try {
         const result = await Room.findOneAndUpdate(
-            {name: room, usersInRoom: {$lte: 5}},
-            {$push: {users: {[socket.id]: username}}, $inc: {usersInRoom: +1}},
-            {new: true});
+            { name: room, usersInRoom: { $lte: 5 } },
+            {
+                $push: {
+                    users: {
+                        username,
+                        socketId: socket.id
+                    },
+                },
+                $inc: { usersInRoom: +1 },
+            },
+            { new: true }
+        );
         logger.info('User was added to room');
         return result;
     } catch (e) {
