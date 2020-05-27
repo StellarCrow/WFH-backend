@@ -1,14 +1,14 @@
 const reconnectUser = require('./reconnectUser');
 const errorHandler = require('./errorHandler');
+const {errors} = require('../constants');
 
 const checkForReconnection = (socket, roomWithUser, currentRoom) => {
-    const room = roomWithUser.pop();
-    if (room.name === currentRoom) {
-        return reconnectUser(socket, room);
+    if (roomWithUser.name === currentRoom) {
+        return reconnectUser(socket, roomWithUser);
     }
     return errorHandler(
         socket,
-        "Can not join to room! User is already in a room",
+        errors.ALREADY_IN_ROOM,
         roomWithUser.name
     );
 };
