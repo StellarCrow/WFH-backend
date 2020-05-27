@@ -95,9 +95,10 @@ module.exports = function (socketIO) {
                     return deleteRoom(socket);
                 }
                 
+                const username = getUserBySocketId(updatedRoom, socket.id).username;
                 socket.to(updatedRoom.name).broadcast.emit('user-disconnected', {
                     answer: successes.USER_DISCONNECTED,
-                    payload: {username: getUserBySocketId(updatedRoom, socket.id)}
+                    payload: {username}
                 });
 
             });
