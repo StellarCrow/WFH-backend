@@ -8,6 +8,7 @@ const User = new Schema({
   password: String,
   firstName: String,
   lastName: String,
+  avatar: String
 });
 
 const userValidator = Joi.object({
