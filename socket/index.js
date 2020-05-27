@@ -8,12 +8,12 @@ const {
     deleteUserFromRoom,
     addUserToRoom,
     createRoom,
-    getUsersInRoom,
+    getUsernamesInRoom,
     getUserBySocketId,
     checkForReconnection,
     findRoom
 } = require('./utilits');
-const {errors, answers} = require('./constants');
+const {errors, successes} = require('./constants');
 
 module.exports = function (socketIO) {
     socketIO.on('connection', function (socket) {
@@ -24,7 +24,7 @@ module.exports = function (socketIO) {
                 const roomsWithUser = await roomsWhereUser(socket.id, username);
                 if (roomsWithUser.length) {
                     // Check if user is trying to reconnect to same room
-                    checkForReconnection(socket, roomsWithUser.pop(), room);
+                    return checkForReconnection(socket, roomsWithUser.pop(), room);
                 }
 
                 const createdRoom = createRoom(socket, room);
@@ -39,7 +39,7 @@ module.exports = function (socketIO) {
                     return errorHandler(socket, errors.CANT_JOIN_ROOM, room)
                 }
                 socket.emit('room-available', {
-                    answer: answers.JOIN_ROOM_AVAILABLE,
+                    answer: successes.JOIN_ROOM_AVAILABLE,
                     payload: room
                 });
             });
@@ -63,14 +63,14 @@ module.exports = function (socketIO) {
                 socketIO
                     .in(room)
                     .emit('new-user-connected', {
-                        answer: answers.NEW_USER_CONNECTED,
-                        payload: getUsersInRoom(roomToJoin),
+                        answer: successes.NEW_USER_CONNECTED,
+                        payload: getUsernamesInRoom(roomToJoin),
                     });
             });
 
             socket.on('new-chat-message', ({message, room, username}) => {
                 socket.to(room).broadcast.emit('chat-message', {
-                    answer: answers.NEW_CHAT_MESSAGE,
+                    answer: successes.NEW_CHAT_MESSAGE,
                     payload: {
                         username,
                         message,
@@ -81,7 +81,7 @@ module.exports = function (socketIO) {
             socket.on('start-game', ({room}) => {
                 socketIO
                     .to(room)
-                    .emit('game-started', {answer: answers.GAME_STARTED, payload: null});
+                    .emit('game-started', {answer: successes.GAME_STARTED, payload: null});
             });
 
             socket.on('disconnect', async () => {
@@ -96,7 +96,7 @@ module.exports = function (socketIO) {
                 }
                 
                 socket.to(updatedRoom.name).broadcast.emit('user-disconnected', {
-                    answer: answers.USER_DISCONNECTED,
+                    answer: successes.USER_DISCONNECTED,
                     payload: {username: getUserBySocketId(updatedRoom, socket.id)}
                 });
 
@@ -113,7 +113,7 @@ module.exports = function (socketIO) {
             socket.on('media-offer', ({offer, room}) => {
                 logger.info('Received media offer');
                 socket.to(room).broadcast.emit('media-back-offer', {
-                    answer: answers.MEDIA_OFFER,
+                    answer: successes.MEDIA_OFFER,
                     payload: offer,
                 });
             });
@@ -121,7 +121,7 @@ module.exports = function (socketIO) {
             socket.on('media-answer', ({answer, room}) => {
                 logger.info('Received media answer');
                 socket.to(room).broadcast.emit('media-back-answer', {
-                    answer: answers.MEDIA_ANSWER,
+                    answer: successes.MEDIA_ANSWER,
                     payload: answer,
                 });
             });

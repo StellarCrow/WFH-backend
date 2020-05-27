@@ -1,7 +1,7 @@
 const errors = require('./errors');
-const answers = require('./answers');
+const successes = require('./successes');
 
 module.exports = {
     errors,
-    answers,
+    successes,
 };
