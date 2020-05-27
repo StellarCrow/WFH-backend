@@ -9,6 +9,7 @@ const {
     addUserToRoom,
     createRoom,
     getUsersInRoom,
+    getUserBySocketId,
     checkForReconnection,
     findRoom
 } = require('./utilits');
@@ -93,9 +94,10 @@ module.exports = function (socketIO) {
                 if (updatedRoom.created_by === socket.id) {
                     return deleteRoom(socket);
                 }
+                
                 socket.to(updatedRoom.name).broadcast.emit('user-disconnected', {
                     answer: answers.USER_DISCONNECTED,
-                    payload: {username: updatedRoom.users[socket.id]}
+                    payload: {username: getUserBySocketId(updatedRoom, socket.id)}
                 });
 
             });

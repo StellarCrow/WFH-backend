@@ -1,5 +1,5 @@
 const getUsersInRoom = (room) => {
-    return room.users.map(item => Object.values(item).pop());
+    return room.users.map(user => user.username);
 };
 
 module.exports = getUsersInRoom;
