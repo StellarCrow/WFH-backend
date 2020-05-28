@@ -8,7 +8,7 @@ const {
     deleteUserFromRoom,
     addUserToRoom,
     createRoom,
-    getUsernamesInRoom,
+    getUsersInRoom,
     getUserBySocketId,
     checkForReconnection,
     findRoom
@@ -53,8 +53,6 @@ module.exports = function (socketIO) {
                 }
 
                 const roomToJoin = await addUserToRoom(socket, room, username);
-                logger.info(roomToJoin.users);
-
                 if (!roomToJoin) {
                     return errorHandler(socket, errors.NO_SUCH_ROOM, room);
                 }
@@ -64,7 +62,7 @@ module.exports = function (socketIO) {
                     .in(room)
                     .emit('new-user-connected', {
                         answer: successes.NEW_USER_CONNECTED,
-                        payload: getUsernamesInRoom(roomToJoin),
+                        payload: getUsersInRoom(roomToJoin),
                     });
             });
 

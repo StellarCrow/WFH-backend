@@ -1,4 +1,4 @@
-const getUsernamesInRoom = require('./getUsernamesInRoom');
+const getUsernamesInRoom = require('./getUsersInRoom');
 
 const reconnectUser = (socket, roomWithUser) => {
     return socket.emit('reconnect-user', {answer: 'Reconnection', payload: getUsernamesInRoom(roomWithUser)})
