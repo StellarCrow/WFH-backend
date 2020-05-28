@@ -16,7 +16,7 @@ const avatarUploadPostHandler = async (req, res) => {
     return errorHandler(res, ERROR.USER_NOT_EXIST);
   }
 
-  try {
+  try {    
     const imageBuffer = req.file.buffer;
     const path = `users/${userId}/avatar/${userId}.png`;
     const imageData = await awsService.upload(imageBuffer, path);
@@ -28,7 +28,7 @@ const avatarUploadPostHandler = async (req, res) => {
       return errorHandler(res, error.message);
     }
 
-    return successResponse(res, SUCCESS.AVATAR_UPLOAD);
+    return successResponse(res, SUCCESS.AVATAR_UPLOAD, {avatar: imageLocation});
   } catch (err) {
     return errorHandler(res, err.message);
   }
