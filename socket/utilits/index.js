@@ -4,7 +4,7 @@ const deleteRoom = require('./deleteRoom');
 const deleteUserFromRoom = require('./deleteUserFromRoom');
 const addUserToRoom = require('./addUserToRoom');
 const createRoom = require('./createRoom');
-const getUsernamesInRoom = require('./getUsernamesInRoom');
+const getUsersInRoom = require('./getUsersInRoom');
 const getUserBySocketId = require('./getUserBySocketId');
 const checkForReconnection = require('./checkForReconnection');
 const findRoom = require('./findRoom');
@@ -16,7 +16,7 @@ module.exports = {
     deleteUserFromRoom,
     addUserToRoom,
     createRoom,
-    getUsernamesInRoom,
+    getUsersInRoom,
     getUserBySocketId,
     checkForReconnection,
     findRoom
