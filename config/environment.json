@@ -9,5 +9,11 @@
     "MONGO_URI": "MONGO_URI"
   },
   "SALT_ROUNDS": "SALT_ROUNDS",
-  "JWT_SECRET": "JWT_SECRET"
+  "JWT_SECRET": "JWT_SECRET",
+  "AWS": {
+    "accessKeyId": "AWS_ACCESS_KEY",
+    "secretAccessKey": "AWS_SECRET_KEY",
+    "BUCKET_NAME": "BUCKET_NAME",
+    "REGION": "AWS_REGION"
+  }
 }
