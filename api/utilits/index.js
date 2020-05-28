@@ -6,6 +6,7 @@ const errorHandler = require('./errorHandler');
 const hashPassword = require('./hashPassword');
 const successResponse = require('./successResponse');
 const validateUser = require('./validateUser');
+const randomAvatar = require('./randomAvatar');
 
 module.exports = {
   comparePasswords,
@@ -16,4 +17,5 @@ module.exports = {
   hashPassword,
   successResponse,
   validateUser,
+  randomAvatar
 };
