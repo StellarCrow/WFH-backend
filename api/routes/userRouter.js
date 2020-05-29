@@ -1,11 +1,12 @@
 const express = require('express');
 const multer = require('multer');
 const upload = multer();
+const tokenAuth = require('../handlers/middlewares/tokenAuth');
 
 const router = express.Router();
 const uploadAvatarPostHandler = require('../handlers/userHandlers/avatarUploadPostHandler');
 
-router.post('/:id/avatar', upload.single('image'), uploadAvatarPostHandler);
+router.post('/:id/avatar', tokenAuth, upload.single('image'), uploadAvatarPostHandler);
 /**
  * @api {post} /api/users/:id/avatar  Upload Avatar
  * @apiName Upload Avatar

@@ -11,9 +11,11 @@ const {
     getUsersInRoom,
     getUserBySocketId,
     checkForReconnection,
-    findRoom
+    findRoom,
+    savePictureLinkInDB
 } = require('./utilits');
 const {errors, successes} = require('./constants');
+const awsService = require('../aws/awsService');
 
 module.exports = function (socketIO) {
     socketIO.on('connection', function (socket) {
@@ -76,10 +78,45 @@ module.exports = function (socketIO) {
                 });
             });
 
+
             socket.on('start-game', ({room}) => {
                 socketIO
                     .to(room)
                     .emit('game-started', {answer: successes.GAME_STARTED, payload: null});
+            });
+
+            socket.on('user-loaded', ({room, username}) => {
+                socketIO
+                    .to(room)
+                    .emit('new-user-loaded', {answer: successes.USER_LOADED, payload: username});
+            });
+            socket.on('all-loaded', ({room}) => {
+                socketIO
+                    .to(room)
+                    .emit('all-users-loaded', {answer: successes.ALL_USER_LOADED, payload: null});
+            });
+
+            socket.on('save-image', ({userID, canvas, room, pictureNumber}) => {
+                awsService
+                    .saveCanvasImage(canvas, pictureNumber, userID, room)
+                    .then(({location}) => savePictureLinkInDB(location, room, socket.id))
+                    .then(_ => socket.emit('image-saved', {answer: 'Picture saved', payload: null}))
+                    .catch((error) => errorHandler(socket, errors.SAVE_IMAGE))
+
+
+            });
+            socket.on('finish-painting', ({username, room}) => {
+                socketIO
+                    .to(room)
+                    .emit('user-finish-painting', {answer: successes.USER_FINISH_PAINTING, payload: username});
+            });
+
+            socket.on('all-finish-painting', ({room}) => {
+                console.log('all finished');
+                socketIO
+                    .to(room)
+                    .emit('stop-painting', {answer: successes.FINISH_PAINTING, payload: null});
+
             });
 
             socket.on('disconnect', async () => {
@@ -92,7 +129,7 @@ module.exports = function (socketIO) {
                 if (updatedRoom.created_by === socket.id) {
                     return deleteRoom(socket);
                 }
-                
+
                 const username = getUserBySocketId(updatedRoom, socket.id).username;
                 socket.to(updatedRoom.name).broadcast.emit('user-disconnected', {
                     answer: successes.USER_DISCONNECTED,

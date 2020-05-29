@@ -4,12 +4,14 @@ const CANT_JOIN_ROOM = 'Can not join to room!';
 const CANT_DELETE_USER_ROOM = 'Can not delete user from room';
 const CONNECTION_ERROR = 'Connection error';
 const CONNECTION_FAILED = 'Connection failed!';
+const SAVE_IMAGE = 'Can not save image!';
 
 module.exports = {
-  NO_SUCH_ROOM,
-  ALREADY_IN_ROOM,
-  CANT_JOIN_ROOM,
-  CANT_DELETE_USER_ROOM,
-  CONNECTION_ERROR,
-  CONNECTION_FAILED,
-}
+    NO_SUCH_ROOM,
+    ALREADY_IN_ROOM,
+    CANT_JOIN_ROOM,
+    CANT_DELETE_USER_ROOM,
+    CONNECTION_ERROR,
+    CONNECTION_FAILED,
+    SAVE_IMAGE
+};
