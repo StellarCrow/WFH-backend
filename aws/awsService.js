@@ -48,6 +48,24 @@ class Storage {
             throw new Error(err.message);
         }
     }
+
+  async getDefaultAvatarList(prefix) {
+    const params = {
+      Bucket: AWS_BUCKET_NAME,
+      Prefix: prefix
+    }
+
+    try {
+      const res = await this.S3.listObjectsV2(params).promise();
+      return res.Contents.slice(1).map(item => {
+        return item.Key;
+      });
+    } catch (error) {
+      throw new Error(err.message);
+    }
+
+  }
+
 }
 
 module.exports = new Storage();
