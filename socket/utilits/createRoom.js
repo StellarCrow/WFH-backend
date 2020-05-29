@@ -7,7 +7,9 @@ const createRoom = (socket, room) => {
         name: room,
         users: [],
         usersInRoom : 0,
-        created_by: socket.id
+        created_by: socket.id,
+        pictures: [],
+        phrases: []
     };
     const {value, error} = roomValidation.validate(createdRoom);
 

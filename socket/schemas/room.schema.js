@@ -7,14 +7,18 @@ const Room = new Schema({
     name : { type: String, unique: true },
     users:  Array,
     usersInRoom : Number,
-    created_by: { type: String, unique: true }
+    created_by: { type: String, unique: true },
+    pictures : Array,
+    phrases : Array
 });
 
 const roomValidation = Joi.object({
     name: Joi.string().length(4).required(),
     users: Joi.array().items(Joi.object()).max(6).required(),
     usersInRoom : Joi.number().required(),
-    created_by: Joi.string().required()
+    created_by: Joi.string().required(),
+    pictures: Joi.array().items(Joi.object()).max(18).required(),
+    phrases: Joi.array().items(Joi.object()).max(18).required()
 });
 
 

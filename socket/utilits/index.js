@@ -8,6 +8,7 @@ const getUsersInRoom = require('./getUsersInRoom');
 const getUserBySocketId = require('./getUserBySocketId');
 const checkForReconnection = require('./checkForReconnection');
 const findRoom = require('./findRoom');
+const savePictureLinkInDB = require('./savePictureLinkInDB');
 
 module.exports = {
     roomsWhereUser,
@@ -19,5 +20,6 @@ module.exports = {
     getUsersInRoom,
     getUserBySocketId,
     checkForReconnection,
-    findRoom
+    findRoom,
+    savePictureLinkInDB
 };
