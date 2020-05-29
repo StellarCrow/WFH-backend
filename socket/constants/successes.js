@@ -7,6 +7,8 @@ const MEDIA_OFFER = 'Sent media offer back';
 const MEDIA_ANSWER = 'Sent media answer back';
 const USER_FINISH_PAINTING = 'User finish painting';
 const FINISH_PAINTING = 'All user finish to painting!';
+const USER_LOADED = 'User was loaded to game successful';
+const ALL_USER_LOADED = 'All users was loaded to game successful';
 
 module.exports = {
     USER_DISCONNECTED,
@@ -17,5 +19,7 @@ module.exports = {
     MEDIA_OFFER,
     MEDIA_ANSWER,
     USER_FINISH_PAINTING,
-    FINISH_PAINTING
+    FINISH_PAINTING,
+    USER_LOADED,
+    ALL_USER_LOADED
 };

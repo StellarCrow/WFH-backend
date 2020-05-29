@@ -78,10 +78,22 @@ module.exports = function (socketIO) {
                 });
             });
 
+
             socket.on('start-game', ({room}) => {
                 socketIO
                     .to(room)
                     .emit('game-started', {answer: successes.GAME_STARTED, payload: null});
+            });
+
+            socket.on('user-loaded', ({room, username}) => {
+                socketIO
+                    .to(room)
+                    .emit('new-user-loaded', {answer: successes.USER_LOADED, payload: username});
+            });
+            socket.on('all-loaded', ({room}) => {
+                socketIO
+                    .to(room)
+                    .emit('all-users-loaded', {answer: successes.ALL_USER_LOADED, payload: null});
             });
 
             socket.on('save-image', ({userID, canvas, room, pictureNumber}) => {
@@ -100,6 +112,7 @@ module.exports = function (socketIO) {
             });
 
             socket.on('all-finish-painting', ({room}) => {
+                console.log('all finished');
                 socketIO
                     .to(room)
                     .emit('stop-painting', {answer: successes.FINISH_PAINTING, payload: null});
