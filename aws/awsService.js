@@ -60,7 +60,7 @@ class Storage {
       return res.Contents.slice(1).map(item => {
         return item.Key;
       });
-    } catch (error) {
+    } catch (err) {
       throw new Error(err.message);
     }
 

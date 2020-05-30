@@ -20,11 +20,14 @@ const registerPostHandler = async (req, res) => {
     return errorHandler(res, ERROR.REGISTER);
   }
 
-  const avatarsList = await awsService.getDefaultAvatarList(
-    pathToDefaultAvatars,
-  );
-  
-  user.avatar = amazonBucketPath + randomAvatar(avatarsList);
+  try {
+    const avatarsList = await awsService.getDefaultAvatarList(
+      pathToDefaultAvatars,
+    );
+    user.avatar = amazonBucketPath + randomAvatar(avatarsList);
+  } catch (err) {
+    errorHandler(res, err.message);
+  }
 
   return hashPassword(user.password)
     .then((hashedPass) => createUser(user, hashedPass))
