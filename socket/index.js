@@ -12,7 +12,8 @@ const {
     getUserBySocketId,
     checkForReconnection,
     findRoom,
-    savePictureLinkInDB
+    savePictureLinkInDB,
+    savePhrase
 } = require('./utilits');
 const {errors, successes} = require('./constants');
 const awsService = require('../aws/awsService');
@@ -112,12 +113,28 @@ module.exports = function (socketIO) {
             });
 
             socket.on('all-finish-painting', ({room}) => {
-                console.log('all finished');
                 socketIO
                     .to(room)
                     .emit('stop-painting', {answer: successes.FINISH_PAINTING, payload: null});
 
             });
+            socket.on('new-phrase', ({phrase, room, userID}) => {
+                savePhrase(phrase, room, userID)
+                    .then(_ => {
+                        socketIO.to(room)
+                            .emit('new-phrase-saved', {answer: successes.SAVE_PHRASE, payload: null});
+                    })
+                    .catch(error => errorHandler(socket, errors.SAVE_PHRASE))
+            });
+            socket.on('finish-phrases', ({room, username}) => {
+                socketIO.to(room)
+                    .emit('user-finish-phrases', {answer: successes.USER_FINISH_PHRASE, payload: username});
+            });
+            socket.on('all-finish-phrases', ({room}) => {
+                socketIO.to(room)
+                    .emit('stop-phrases', {answer: successes.ALL_FINISH_PHRASE, payload: null});
+            });
+
 
             socket.on('disconnect', async () => {
                 logger.info('Disconnecting user...');
