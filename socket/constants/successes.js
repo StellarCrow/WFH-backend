@@ -9,6 +9,9 @@ const USER_FINISH_PAINTING = 'User finish painting';
 const FINISH_PAINTING = 'All user finish to painting!';
 const USER_LOADED = 'User was loaded to game successful';
 const ALL_USER_LOADED = 'All users was loaded to game successful';
+const SAVE_PHRASE = 'Phrase was saved!';
+const USER_FINISH_PHRASE = 'User finish creating phrases';
+const ALL_FINISH_PHRASE = 'All users finished phrases stage';
 
 module.exports = {
     USER_DISCONNECTED,
@@ -21,5 +24,8 @@ module.exports = {
     USER_FINISH_PAINTING,
     FINISH_PAINTING,
     USER_LOADED,
-    ALL_USER_LOADED
+    ALL_USER_LOADED,
+    SAVE_PHRASE,
+    USER_FINISH_PHRASE,
+    ALL_FINISH_PHRASE
 };

@@ -5,6 +5,7 @@ const CANT_DELETE_USER_ROOM = 'Can not delete user from room';
 const CONNECTION_ERROR = 'Connection error';
 const CONNECTION_FAILED = 'Connection failed!';
 const SAVE_IMAGE = 'Can not save image!';
+const SAVE_PHRASE = 'Can not save phrase!';
 
 module.exports = {
     NO_SUCH_ROOM,
@@ -13,5 +14,6 @@ module.exports = {
     CANT_DELETE_USER_ROOM,
     CONNECTION_ERROR,
     CONNECTION_FAILED,
-    SAVE_IMAGE
+    SAVE_IMAGE,
+    SAVE_PHRASE
 };
