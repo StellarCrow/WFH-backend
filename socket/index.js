@@ -113,7 +113,6 @@ module.exports = function (socketIO) {
             });
 
             socket.on('all-finish-painting', ({room}) => {
-                console.log('finishing painting')
                 socketIO
                     .to(room)
                     .emit('stop-painting', {answer: successes.FINISH_PAINTING, payload: null});
