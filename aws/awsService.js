@@ -32,12 +32,12 @@ class Storage {
         }
     }
 
-    async saveCanvasImage(base64, pictureNumber, userID, room) {
+    async saveCanvasImage(base64, pictureNumber, socketID, room) {
         const imageBuffer = new Buffer.from(base64.replace(/^data:image\/\w+;base64,/, ""), 'base64');
         const type = base64.split(';')[0].split('/')[1];
         const params = {
             Bucket: AWS_BUCKET_NAME,
-            Key: `pictures/${room}/${userID}.${pictureNumber}.${type}`,
+            Key: `pictures/${room}/${socketID}.${pictureNumber}.${type}`,
             Body: imageBuffer,
             ContentEncoding: 'base64',
             ContentType: `image/${type}`

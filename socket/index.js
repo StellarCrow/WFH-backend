@@ -13,7 +13,8 @@ const {
     checkForReconnection,
     findRoom,
     savePictureLinkInDB,
-    savePhrase
+    savePhrase,
+    createPairs
 } = require('./utilits');
 const {errors, successes} = require('./constants');
 const awsService = require('../aws/awsService');
@@ -97,14 +98,12 @@ module.exports = function (socketIO) {
                     .emit('all-users-loaded', {answer: successes.ALL_USER_LOADED, payload: null});
             });
 
-            socket.on('save-image', ({userID, canvas, room, pictureNumber}) => {
+            socket.on('save-image', ({canvas, room, pictureNumber}) => {
                 awsService
-                    .saveCanvasImage(canvas, pictureNumber, userID, room)
-                    .then(({location}) => savePictureLinkInDB(location, room, socket.id))
+                    .saveCanvasImage(canvas, pictureNumber, socket.id, room)
+                    .then(({Location}) => savePictureLinkInDB(Location, room, socket.id))
                     .then(_ => socket.emit('image-saved', {answer: 'Picture saved', payload: null}))
                     .catch((error) => errorHandler(socket, errors.SAVE_IMAGE))
-
-
             });
             socket.on('finish-painting', ({username, room}) => {
                 socketIO
@@ -118,8 +117,8 @@ module.exports = function (socketIO) {
                     .emit('stop-painting', {answer: successes.FINISH_PAINTING, payload: null});
 
             });
-            socket.on('new-phrase', ({phrase, room, userID}) => {
-                savePhrase(phrase, room, userID)
+            socket.on('new-phrase', ({phrase, room}) => {
+                savePhrase(phrase, room, socket.id)
                     .then(_ => {
                         socketIO.to(room)
                             .emit('new-phrase-saved', {answer: successes.SAVE_PHRASE, payload: null});
@@ -134,6 +133,34 @@ module.exports = function (socketIO) {
                 socketIO.to(room)
                     .emit('stop-phrases', {answer: successes.ALL_FINISH_PHRASE, payload: null});
             });
+
+            socket.on('start-match', async ({room}) => {
+                    const currentRoom = await findRoom(room);
+                    if (!currentRoom) {
+                        return errorHandler(socket, errors.FIND_ROOM, room)
+                    }
+                    const pairs = createPairs(currentRoom);
+                    const users = currentRoom[0].users.map(user => ({...user, result: []}));
+
+
+                    (function f(i = 0) {
+                        console.log(i)
+                        const generatedPair = generator(pairs).next();
+                        if (i  === users.length) {
+                            console.log('Im on top')
+                            return f()
+                        }
+                        if (!generatedPair.done) {
+                            console.log(users[i])
+                            users[i].result.push(generatedPair.value);
+
+                            return f(i+1);
+                        }
+                    })();
+
+                    console.log(users);
+                }
+            );
 
 
             socket.on('disconnect', async () => {
@@ -182,3 +209,9 @@ module.exports = function (socketIO) {
     )
 };
 
+function* generator(array) {
+    for (let i = 0; i < array.length; i++) {
+        console.log('yielded')
+        yield array[i];
+    }
+}
