@@ -5,6 +5,7 @@ const cors = require('cors');
 const config = require('config');
 const log4js = require('log4js');
 const authRouter = require('./api/routes/authRouter');
+const userRouter = require('./api/routes/userRouter');
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/auth', authRouter);
+app.use('/api/users', userRouter);
 
 // Run HTTP server
 const httpServer = app.listen(process.env.PORT || PORT, () => {
