@@ -18,6 +18,11 @@ const {
 const {errors, successes} = require('./constants');
 const awsService = require('../aws/awsService');
 
+// WebRTC stuff
+const peers = {}; // TODO: use Mongo
+const peerSocketToRoomCode = {}; // TODO: use Mongo
+const MAX_PEERS_PER_CALL = 6; // TODO: store in constants
+
 module.exports = function (socketIO) {
     socketIO.on('connection', function (socket) {
             logger.info('Connected...');
@@ -103,6 +108,7 @@ module.exports = function (socketIO) {
                     .then(({Location}) => savePictureLinkInDB(Location, room, socket.id, canvasBackground))
                     .then(_ => socket.emit('image-saved', {answer: 'Picture saved', payload: null}))
                     .catch((error) => errorHandler(socket, errors.SAVE_IMAGE))
+
             });
             socket.on('finish-painting', ({username, room}) => {
                 socketIO
@@ -135,7 +141,27 @@ module.exports = function (socketIO) {
 
 
             socket.on('disconnect', async () => {
-                logger.info('Disconnecting user...');
+                logger.info(`Disconnecting user ${socket.id}`);
+
+                // WebRTC part
+                const roomCode = peerSocketToRoomCode[socket.id];
+                logger.info('roomcode:', roomCode);
+                logger.info(peers);
+                let peersInRoom = peers[roomCode];
+                if (peersInRoom) {
+                    logger.info(peersInRoom);
+                    peersInRoom = peersInRoom.filter(peerID => peerID !== socket.id);
+                    peers[roomCode] = peersInRoom;
+
+                    // TODO: check why we receive that event only once
+                    // (when there is 1-on-1 connection)
+                    socket.to(peersInRoom).broadcast.emit('peer-disconnected', {
+                        answer: successes.USER_DISCONNECTED,
+                        payload: {id: socket.id},
+                    });
+                }
+
+                // Main WS part
                 const updatedRoom = await deleteUserFromRoom(socket);
                 if (!updatedRoom) {
                     return errorHandler(socket, errors.CANT_DELETE_USER_ROOM);
@@ -161,22 +187,53 @@ module.exports = function (socketIO) {
                 return errorHandler(socket, errors.CONNECTION_FAILED)
             });
 
-            socket.on('media-offer', ({offer, room}) => {
-                logger.info('Received media offer');
-                socket.to(room).broadcast.emit('media-back-offer', {
-                    answer: successes.MEDIA_OFFER,
-                    payload: offer,
+            /*******************************************************/
+            // WebRTC video-chat (mesh network, max 6 peers per call)
+
+            socket.on('join-room', ({roomCode}) => {
+                logger.info(`>>> ${socket.id} joining room ${roomCode}`);
+
+                if (peers[roomCode]) {
+                    const length = peers[roomCode].length;
+                    if (length >= MAX_PEERS_PER_CALL) {
+                        socket.emit('room full');
+                        return;
+                    }
+                    peers[roomCode].push(socket.id);
+                } else {
+                    peers[roomCode] = [socket.id];
+                }
+                peerSocketToRoomCode[socket.id] = roomCode;
+                const peerIDsInThisRoom = peers[roomCode].filter(id => id !== socket.id);
+
+                logger.info(peerIDsInThisRoom);
+
+                socket.emit('all-peers', {
+                    answer: '[RTC] Sending all peers', // TODO: constant answer
+                    payload: {peerIDs: peerIDsInThisRoom},
                 });
             });
 
-            socket.on('media-answer', ({answer, room}) => {
-                logger.info('Received media answer');
-                socket.to(room).broadcast.emit('media-back-answer', {
-                    answer: successes.MEDIA_ANSWER,
-                    payload: answer,
+            socket.on('send-signal', ({userToSignal, signal, callerID}) => {
+                logger.info(userToSignal, '-->', callerID);
+
+                socketIO.to(userToSignal).emit('peer-joined', {
+                    answer: '[RTC] Sending signal', // TODO: constant answer
+                    payload: {signal, callerID},
+                });
+            });
+
+            socket.on('return-signal', ({callerID, signal}) => {
+                const { id } = socket;
+
+                logger.info(callerID, '<--', id);
+
+                socketIO.to(callerID).emit('received-return-signal', {
+                    answer: '[RTC] Returning signal', // TODO: constant answer
+                    payload: {signal, id},
                 });
             });
         }
-    )
+    );
 };
 
