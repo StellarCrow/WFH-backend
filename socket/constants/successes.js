@@ -12,6 +12,7 @@ const ALL_USER_LOADED = 'All users was loaded to game successful';
 const SAVE_PHRASE = 'Phrase was saved!';
 const USER_FINISH_PHRASE = 'User finish creating phrases';
 const ALL_FINISH_PHRASE = 'All users finished phrases stage';
+const PAIRS_CREATED = 'Pairs of picture and phrase was created!';
 
 module.exports = {
     USER_DISCONNECTED,
@@ -27,5 +28,6 @@ module.exports = {
     ALL_USER_LOADED,
     SAVE_PHRASE,
     USER_FINISH_PHRASE,
-    ALL_FINISH_PHRASE
+    ALL_FINISH_PHRASE,
+    PAIRS_CREATED
 };

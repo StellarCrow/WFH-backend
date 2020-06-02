@@ -10,6 +10,8 @@ const checkForReconnection = require('./checkForReconnection');
 const findRoom = require('./findRoom');
 const savePictureLinkInDB = require('./savePictureLinkInDB');
 const savePhrase = require('./savePhrase');
+const createPairs = require('./createPairs');
+const distributeTee = require('./distributeTee');
 
 module.exports = {
     roomsWhereUser,
@@ -23,5 +25,7 @@ module.exports = {
     checkForReconnection,
     findRoom,
     savePictureLinkInDB,
-    savePhrase
+    savePhrase,
+    createPairs,
+    distributeTee
 };

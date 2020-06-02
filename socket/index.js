@@ -13,7 +13,9 @@ const {
     checkForReconnection,
     findRoom,
     savePictureLinkInDB,
-    savePhrase
+    savePhrase,
+    createPairs,
+    distributeTee
 } = require('./utilits');
 const {errors, successes} = require('./constants');
 const awsService = require('../aws/awsService');
@@ -108,7 +110,6 @@ module.exports = function (socketIO) {
                     .then(({Location}) => savePictureLinkInDB(Location, room, socket.id, canvasBackground))
                     .then(_ => socket.emit('image-saved', {answer: 'Picture saved', payload: null}))
                     .catch((error) => errorHandler(socket, errors.SAVE_IMAGE))
-
             });
             socket.on('finish-painting', ({username, room}) => {
                 socketIO
@@ -122,8 +123,8 @@ module.exports = function (socketIO) {
                     .emit('stop-painting', {answer: successes.FINISH_PAINTING, payload: null});
 
             });
-            socket.on('new-phrase', ({phrase, room, userID}) => {
-                savePhrase(phrase, room, userID)
+            socket.on('new-phrase', ({phrase, room}) => {
+                savePhrase(phrase, room, socket.id)
                     .then(_ => {
                         socketIO.to(room)
                             .emit('new-phrase-saved', {answer: successes.SAVE_PHRASE, payload: null});
@@ -139,6 +140,23 @@ module.exports = function (socketIO) {
                     .emit('stop-phrases', {answer: successes.ALL_FINISH_PHRASE, payload: null});
             });
 
+            socket.on('create-pairs', async ({room}) => {
+                    const currentRoom = await findRoom(room);
+                    if (!currentRoom) {
+                        return errorHandler(socket, errors.FIND_ROOM, room)
+                    }
+                    const pairs = createPairs(currentRoom);
+                    const usersWithTee = distributeTee(currentRoom, pairs);
+                    try {
+                        usersWithTee.map(user => {
+                            socketIO.to(user.socketId).emit('pairs-created',
+                                {answer: successes.PAIRS_CREATED, payload: user.tee});
+                        })
+                    } catch (error) {
+                        return errorHandler(socket, errors.PAIRS_SENDING)
+                    }
+                }
+            );
 
             socket.on('disconnect', async () => {
                 logger.info(`Disconnecting user ${socket.id}`);
@@ -234,6 +252,7 @@ module.exports = function (socketIO) {
                 });
             });
         }
+
     );
 };
 
