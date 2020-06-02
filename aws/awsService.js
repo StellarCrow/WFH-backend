@@ -32,6 +32,7 @@ class Storage {
         }
     }
 
+
     async saveCanvasImage(base64, pictureNumber, socketID, room) {
         const imageBuffer = new Buffer.from(base64.replace(/^data:image\/\w+;base64,/, ""), 'base64');
         const type = base64.split(';')[0].split('/')[1];

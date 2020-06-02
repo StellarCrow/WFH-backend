@@ -104,9 +104,9 @@ module.exports = function (socketIO) {
                     .emit('all-users-loaded', {answer: successes.ALL_USER_LOADED, payload: null});
             });
 
-            socket.on('save-image', ({userID, canvas, room, pictureNumber, canvasBackground}) => {
+            socket.on('save-image', ({ canvas, room, pictureNumber, canvasBackground}) => {
                 awsService
-                    .saveCanvasImage(canvas, pictureNumber, userID, room)
+                    .saveCanvasImage(canvas, pictureNumber, socket.id, room)
                     .then(({Location}) => savePictureLinkInDB(Location, room, socket.id, canvasBackground))
                     .then(_ => socket.emit('image-saved', {answer: 'Picture saved', payload: null}))
                     .catch((error) => errorHandler(socket, errors.SAVE_IMAGE))
