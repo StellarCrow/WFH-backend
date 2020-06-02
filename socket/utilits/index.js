@@ -11,6 +11,7 @@ const findRoom = require('./findRoom');
 const savePictureLinkInDB = require('./savePictureLinkInDB');
 const savePhrase = require('./savePhrase');
 const createPairs = require('./createPairs');
+const distributeTee = require('./distributeTee');
 
 module.exports = {
     roomsWhereUser,
@@ -25,5 +26,6 @@ module.exports = {
     findRoom,
     savePictureLinkInDB,
     savePhrase,
-    createPairs
+    createPairs,
+    distributeTee
 };

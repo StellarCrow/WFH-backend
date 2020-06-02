@@ -14,7 +14,8 @@ const {
     findRoom,
     savePictureLinkInDB,
     savePhrase,
-    createPairs
+    createPairs,
+    distributeTee
 } = require('./utilits');
 const {errors, successes} = require('./constants');
 const awsService = require('../aws/awsService');
@@ -134,34 +135,23 @@ module.exports = function (socketIO) {
                     .emit('stop-phrases', {answer: successes.ALL_FINISH_PHRASE, payload: null});
             });
 
-            socket.on('start-match', async ({room}) => {
+            socket.on('create-pairs', async ({room}) => {
                     const currentRoom = await findRoom(room);
                     if (!currentRoom) {
                         return errorHandler(socket, errors.FIND_ROOM, room)
                     }
                     const pairs = createPairs(currentRoom);
-                    const users = currentRoom[0].users.map(user => ({...user, result: []}));
-
-
-                    (function f(i = 0) {
-                        console.log(i)
-                        const generatedPair = generator(pairs).next();
-                        if (i  === users.length) {
-                            console.log('Im on top')
-                            return f()
-                        }
-                        if (!generatedPair.done) {
-                            console.log(users[i])
-                            users[i].result.push(generatedPair.value);
-
-                            return f(i+1);
-                        }
-                    })();
-
-                    console.log(users);
+                    const usersWithTee = distributeTee(currentRoom, pairs);
+                    try {
+                        usersWithTee.map(user => {
+                            socketIO.to(user.socketId).emit('pairs-created',
+                                {answer: successes.PAIRS_CREATED, payload: user.tee});
+                        })
+                    } catch (error) {
+                        return errorHandler(socket, errors.PAIRS_SENDING)
+                    }
                 }
             );
-
 
             socket.on('disconnect', async () => {
                 logger.info('Disconnecting user...');
@@ -207,11 +197,7 @@ module.exports = function (socketIO) {
             });
         }
     )
-};
-
-function* generator(array) {
-    for (let i = 0; i < array.length; i++) {
-        console.log('yielded')
-        yield array[i];
-    }
 }
+;
+
+

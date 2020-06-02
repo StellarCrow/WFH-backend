@@ -7,7 +7,7 @@ const CONNECTION_FAILED = 'Connection failed!';
 const SAVE_IMAGE = 'Can not save image!';
 const SAVE_PHRASE = 'Can not save phrase!';
 const FIND_ROOM = 'Can not find a room!';
-
+const PAIRS_SENDING= 'Can not send pairs to users!';
 module.exports = {
     NO_SUCH_ROOM,
     ALREADY_IN_ROOM,
@@ -17,5 +17,6 @@ module.exports = {
     CONNECTION_FAILED,
     SAVE_IMAGE,
     SAVE_PHRASE,
-    FIND_ROOM
+    FIND_ROOM,
+    PAIRS_SENDING
 };
