@@ -9,7 +9,8 @@ const Room = new Schema({
     usersInRoom : Number,
     created_by: { type: String, unique: true },
     pictures : Array,
-    phrases : Array
+    phrases : Array,
+    isGameStarted: { type: Boolean, default: false }
 });
 
 const roomValidation = Joi.object({
