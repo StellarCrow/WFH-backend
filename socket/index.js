@@ -1,6 +1,7 @@
 const log4js = require('log4js');
 const logger = log4js.getLogger();
 const {Room} = require('./schemas/room.schema');
+const {Tee} = require('./schemas/tee.schema');
 const {
     roomsWhereUser,
     errorHandler,
@@ -15,7 +16,8 @@ const {
     savePictureLinkInDB,
     savePhrase,
     createPairs,
-    distributeTee
+    distributeTee,
+    saveTee
 } = require('./utilits');
 const {errors, successes} = require('./constants');
 const awsService = require('../aws/awsService');
@@ -126,10 +128,9 @@ module.exports = function (socketIO) {
             socket.on('new-phrase', ({phrase, room}) => {
                 savePhrase(phrase, room, socket.id)
                     .then(_ => {
-                        socketIO.to(room)
-                            .emit('new-phrase-saved', {answer: successes.SAVE_PHRASE, payload: null});
+                        socket.emit('new-phrase-saved', {answer: successes.SAVE_PHRASE, payload: null});
                     })
-                    .catch(error => errorHandler(socket, errors.SAVE_PHRASE))
+                    .catch(error => errorHandler(socket, errors.SAVE_PHRASE));
             });
             socket.on('finish-phrases', ({room, username}) => {
                 socketIO.to(room)
@@ -153,10 +154,26 @@ module.exports = function (socketIO) {
                                 {answer: successes.PAIRS_CREATED, payload: user.tee});
                         })
                     } catch (error) {
-                        return errorHandler(socket, errors.PAIRS_SENDING)
+                        return errorHandler(socket, errors.PAIRS_SENDING);
                     }
                 }
             );
+            socket.on('new-tee', ({tee}) => {
+                const createdTee = saveTee(tee, socket.id);
+
+                new Tee(createdTee)
+                    .save()
+                    .then(_ => socket.emit('new-tee-created', {answer: successes.SAVE_TEE, payload: null}))
+                    .catch(error => errorHandler(socket, errors.SAVE_TEE));
+            });
+            socket.on('finish-matching', ({room, username}) => {
+                socketIO.to(room)
+                    .emit('user-finish-matching', {answer: successes.USER_FINISH_MATCHING, payload: username});
+            });
+            socket.on('all-finish-matching', ({room}) => {
+                socketIO.to(room)
+                    .emit('stop-matching', {answer: successes.ALL_FINISH_MATCHING, payload: null});
+            });
 
             socket.on('disconnect', async () => {
                 logger.info(`Disconnecting user ${socket.id}`);
