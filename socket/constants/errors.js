@@ -7,16 +7,21 @@ const CONNECTION_FAILED = 'Connection failed!';
 const SAVE_IMAGE = 'Can not save image!';
 const SAVE_PHRASE = 'Can not save phrase!';
 const FIND_ROOM = 'Can not find a room!';
-const PAIRS_SENDING= 'Can not send pairs to users!';
+const PAIRS_SENDING = 'Can not send pairs to users!';
+const START_GAME = 'Error while starting game';
+const GAME_IS_STARTED = "Sorry, the game is already started. You can't join";
+
 module.exports = {
-    NO_SUCH_ROOM,
-    ALREADY_IN_ROOM,
-    CANT_JOIN_ROOM,
-    CANT_DELETE_USER_ROOM,
-    CONNECTION_ERROR,
-    CONNECTION_FAILED,
-    SAVE_IMAGE,
-    SAVE_PHRASE,
-    FIND_ROOM,
-    PAIRS_SENDING
+  NO_SUCH_ROOM,
+  ALREADY_IN_ROOM,
+  CANT_JOIN_ROOM,
+  CANT_DELETE_USER_ROOM,
+  CONNECTION_ERROR,
+  CONNECTION_FAILED,
+  SAVE_IMAGE,
+  SAVE_PHRASE,
+  FIND_ROOM,
+  PAIRS_SENDING,
+  START_GAME,
+  GAME_IS_STARTED,
 };

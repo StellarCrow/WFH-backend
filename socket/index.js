@@ -15,7 +15,8 @@ const {
     savePictureLinkInDB,
     savePhrase,
     createPairs,
-    distributeTee
+    distributeTee,
+    startGame
 } = require('./utilits');
 const {errors, successes} = require('./constants');
 const awsService = require('../aws/awsService');
@@ -45,9 +46,15 @@ module.exports = function (socketIO) {
 
             socket.on('check-room', async (room) => {
                 const joinRoom = await findRoom(room);
+
                 if (!joinRoom || !joinRoom.length) {
                     return errorHandler(socket, errors.CANT_JOIN_ROOM, room)
                 }
+
+                if(joinRoom[0].isGameStarted) {
+                    return errorHandler(socket, errors.GAME_IS_STARTED, room)
+                }
+
                 socket.emit('room-available', {
                     answer: successes.JOIN_ROOM_AVAILABLE,
                     payload: room
@@ -88,9 +95,13 @@ module.exports = function (socketIO) {
 
 
             socket.on('start-game', ({room}) => {
-                socketIO
+                startGame(room)
+                .then(() => {
+                    socketIO
                     .to(room)
                     .emit('game-started', {answer: successes.GAME_STARTED, payload: null});
+                })
+                .catch((err) => errorHandler(socket, errors.START_GAME))
             });
 
             socket.on('user-loaded', ({room, username}) => {
