@@ -8,6 +8,8 @@ const SAVE_IMAGE = 'Can not save image!';
 const SAVE_PHRASE = 'Can not save phrase!';
 const FIND_ROOM = 'Can not find a room!';
 const PAIRS_SENDING= 'Can not send pairs to users!';
+const SAVE_TEE = 'Can not save tee!';
+
 module.exports = {
     NO_SUCH_ROOM,
     ALREADY_IN_ROOM,
@@ -18,5 +20,6 @@ module.exports = {
     SAVE_IMAGE,
     SAVE_PHRASE,
     FIND_ROOM,
-    PAIRS_SENDING
+    PAIRS_SENDING,
+    SAVE_TEE
 };

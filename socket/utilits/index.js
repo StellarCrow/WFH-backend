@@ -12,6 +12,7 @@ const savePictureLinkInDB = require('./savePictureLinkInDB');
 const savePhrase = require('./savePhrase');
 const createPairs = require('./createPairs');
 const distributeTee = require('./distributeTee');
+const saveTee = require('./saveTee');
 
 module.exports = {
     roomsWhereUser,
@@ -27,5 +28,6 @@ module.exports = {
     savePictureLinkInDB,
     savePhrase,
     createPairs,
-    distributeTee
+    distributeTee,
+    saveTee
 };
