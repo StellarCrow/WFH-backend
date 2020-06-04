@@ -13,6 +13,7 @@ const SAVE_PHRASE = 'Phrase was saved!';
 const USER_FINISH_PHRASE = 'User finish creating phrases';
 const ALL_FINISH_PHRASE = 'All users finished phrases stage';
 const PAIRS_CREATED = 'Pairs of picture and phrase was created!';
+const USER_LEFT_ROOM = 'User left room';
 
 module.exports = {
     USER_DISCONNECTED,
@@ -29,5 +30,6 @@ module.exports = {
     SAVE_PHRASE,
     USER_FINISH_PHRASE,
     ALL_FINISH_PHRASE,
-    PAIRS_CREATED
+    PAIRS_CREATED,
+    USER_LEFT_ROOM
 };

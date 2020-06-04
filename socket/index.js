@@ -16,7 +16,8 @@ const {
     savePhrase,
     createPairs,
     distributeTee,
-    startGame
+    startGame,
+    removeUserFromRoom
 } = require('./utilits');
 const {errors, successes} = require('./constants');
 const awsService = require('../aws/awsService');
@@ -94,7 +95,7 @@ module.exports = function (socketIO) {
             });
 
 
-            socket.on('start-game', ({room}) => {
+            socket.on('start-game', ({username, room}) => {
                 startGame(room)
                 .then(() => {
                     socketIO
@@ -102,6 +103,21 @@ module.exports = function (socketIO) {
                     .emit('game-started', {answer: successes.GAME_STARTED, payload: null});
                 })
                 .catch((err) => errorHandler(socket, errors.START_GAME))
+            });
+
+            socket.on('leave-room', async ({room, username}) => {
+                const roomToLeave = await removeUserFromRoom(room, socket, username);
+                if (!roomToLeave) {
+                    return errorHandler(socket, errors.NO_SUCH_ROOM, room);
+                }
+
+                socket.leave(room);
+                socketIO
+                    .to(room)
+                    .emit('user-left-room', {
+                        answer: successes.USER_LEFT_ROOM,
+                        payload: getUsersInRoom(roomToLeave),
+                    });
             });
 
             socket.on('user-loaded', ({room, username}) => {

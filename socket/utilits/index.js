@@ -13,6 +13,7 @@ const savePhrase = require('./savePhrase');
 const createPairs = require('./createPairs');
 const distributeTee = require('./distributeTee');
 const startGame = require('./startGame');
+const removeUserFromRoom = require('./removeUserFromRoom');
 
 module.exports = {
     roomsWhereUser,
@@ -29,5 +30,6 @@ module.exports = {
     savePhrase,
     createPairs,
     distributeTee,
-    startGame
+    startGame,
+    removeUserFromRoom
 };
