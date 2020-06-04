@@ -202,8 +202,8 @@ module.exports = function (socketIO) {
             });
             socket.on('send-vote', async ({username, winner, room}) => {
                 logger.info('Voting for tee:', winner.created_by);
-                const {room_id, created_by, votes} = winner;
-                await Tee.findOneAndUpdate({room_id, created_by}, {votes: votes + 1});
+                const {room_id, created_by} = winner;
+                await Tee.findOneAndUpdate({room_id, created_by}, {$inc: {votes: 1}});
                
                 socketIO
                     .to(room)
