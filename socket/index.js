@@ -17,7 +17,8 @@ const {
     savePhrase,
     createPairs,
     distributeTee,
-    saveTee
+    saveTee,
+    getTeesByRoom
 } = require('./utilits');
 const {errors, successes} = require('./constants');
 const awsService = require('../aws/awsService');
@@ -158,8 +159,8 @@ module.exports = function (socketIO) {
                     }
                 }
             );
-            socket.on('new-tee', ({tee}) => {
-                const createdTee = saveTee(tee, socket.id);
+            socket.on('new-tee', ({tee, room}) => {
+                const createdTee = saveTee(tee, room, socket.id);
 
                 new Tee(createdTee)
                     .save()
@@ -167,12 +168,79 @@ module.exports = function (socketIO) {
                     .catch(error => errorHandler(socket, errors.SAVE_TEE));
             });
             socket.on('finish-matching', ({room, username}) => {
-                socketIO.to(room)
+                socketIO
+                    .to(room)
                     .emit('user-finish-matching', {answer: successes.USER_FINISH_MATCHING, payload: username});
             });
             socket.on('all-finish-matching', ({room}) => {
-                socketIO.to(room)
+                socketIO
+                    .to(room)
                     .emit('stop-matching', {answer: successes.ALL_FINISH_MATCHING, payload: null});
+            });
+
+            socket.on('start-voting', async ({room}) => {
+                // findTeePair and set their votes to 0
+                const tees = await Tee.find({room_id: room, has_lost: false, votes: null}).limit(2);
+                tees[0].votes = 0;
+                await tees[0].save();
+                tees[1].votes = 0;
+                await tees[1].save();
+                logger.info('>> Start voting for tees:', tees.map(tee => tee.created_by));
+
+                socketIO
+                    .to(room)
+                    .emit('send-vote-tees', {
+                        answer: 'Voting has started',
+                        payload: tees
+                    });
+            });
+            socket.on('send-vote', async ({username, winner, room}) => {
+                logger.info('>>> Winner of 1 vote:', winner.created_by);
+                const {room_id, created_by, votes} = winner;
+                await Tee.findOneAndUpdate({room_id, created_by}, {votes: votes + 1});
+            
+                socketIO
+                    .to(room)
+                    .emit('user-finish-voting', {answer: 'User finished voting', payload: username});
+            });
+            socket.on('all-finish-voting', async ({room}) => {
+                // getVoteTeePair - loser and winner
+                const votedPair = await Tee.find({room_id: room}).where('votes').ne(null).limit(2);
+                logger.info('>>>> Winner and loser:', votedPair.map(tee => tee.created_by));
+
+                // updateLoserTee
+                const loserId = votedPair[0].votes < votedPair[1].votes ? 0 : 1;
+                votedPair[loserId].has_lost = true;
+                await votedPair[loserId].save();
+
+                // updateLoserTee
+                const winnerId = Number(!loserId);
+                votedPair[winnerId].votes = 0;
+                await votedPair[winnerId].save();
+
+                // findVirginTee
+                const nextTee = await Tee.findOne({room_id: room, has_lost: false, votes: null});
+
+                if (nextTee) {
+                    nextTee.votes = 0;
+                    await nextTee.save();
+
+                    logger.info('>>>> Next pair:', votedPair[winnerId], nextTee);
+
+                    socketIO
+                        .to(room)
+                        .emit('send-vote-tees', {
+                            answer: 'Continue voting with new tees',
+                            payload: [votedPair[winnerId], nextTee]
+                        });
+                } else {
+                    socketIO
+                        .to(room)
+                        .emit('stop-voting', {
+                            answer: 'All users finished voting',
+                            payload: null
+                        });
+                }
             });
 
             socket.on('disconnect', async () => {
