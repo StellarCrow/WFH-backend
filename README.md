@@ -91,6 +91,6 @@ If this is your second part, skip first 3 points and go strictly to cloning yhe 
 Reach out us at one of the following places!
 
 - [Facebook](https://www.facebook.com/pfhgames.pfhgames.9)
-- [Gmail](pfh.pfh.pfh.pfh.pfh@gmail.com)
 - [Instagram](https://www.instagram.com/PFH_Games/)
 - [Twitter](https://twitter.com/GamesPfh)
+- pfh.pfh.pfh.pfh.pfh@gmail.com
