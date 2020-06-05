@@ -21,6 +21,14 @@ const {
     saveTee,
     getTeesByRoom,
     removeUserFromRoom
+    setupTeePair,
+    setupNextTee,
+    voteForTee,
+    getRoundWinner,
+    getNextTee,
+    getVotedTeePair,
+    markLoserTee,
+    resetWinnerTee
 } = require('./utilits');
 const {errors, successes} = require('./constants');
 const awsService = require('../aws/awsService');
@@ -213,28 +221,15 @@ module.exports = function (socketIO) {
 
             socket.on('start-voting', async ({room}) => {
                 logger.info('[Re-]Start voting');
-
-                // findTeePair and set their votes to 0
-                const tees = await Tee.find({room_id: room, has_lost: false});
-                tees[0].votes = 0;
-                tees[1].votes = 0;
-                await tees[0].save();
-                await tees[1].save();
-
-                logger.info('> Start voting for tees:', tees.slice(0, 2).map(tee => tee.created_by));
+                const tees = await setupTeePair( room);
 
                 socketIO
                     .to(room)
-                    .emit('send-vote-tees', {
-                        answer: 'Voting has started',
-                        payload: tees.slice(0, 2)
-                    });
+                    .emit('send-vote-tees', {answer: 'Voting has started', payload: tees});
             });
             socket.on('send-vote', async ({username, winner, room}) => {
                 logger.info('Voting for tee:', winner.created_by);
-                // voteForTee
-                const {room_id, created_by} = winner;
-                await Tee.findOneAndUpdate({room_id, created_by}, {$inc: {votes: 1}});
+                await voteForTee(winner);
 
                 socketIO
                     .to(room)
@@ -247,35 +242,28 @@ module.exports = function (socketIO) {
             });
 
             socket.on('all-finish-voting', async ({room}) => {
-                // getVoteTeePair - loser and winner
-                const votedPair = await Tee.find({room_id: room}).where('votes').ne(null).limit(2);
-
-                // markLoserTee
+                const votedPair = await getVotedTeePair(room);
                 const loserId = votedPair[0].votes < votedPair[1].votes ? 0 : 1;
-                votedPair[loserId].has_lost = true;
-                await votedPair[loserId].save();
-
-                // findNewVirginTee
-                const nextTee = await Tee.findOne({room_id: room, has_lost: false, votes: null});
-                logger.info('Next contestor tee:', nextTee);
-
-                // resetWinnerTee
                 const winnerId = Number(!loserId);
-                votedPair[winnerId].votes = null;
-                await votedPair[winnerId].save();
 
-                const winner = await Tee.findOne({room_id: room, has_lost: false}).where('votes').ne(null);
-                logger.info('Winner of the round is:', winner);
+                await markLoserTee(votedPair[loserId]);
+
+                const nextTee = await getNextTee(room);
+                logger.info('Next contestor tee:', nextTee ? nextTee.created_by : 'not found');
+
+                const winner = await getRoundWinner(room);
+                logger.info('Winner of the round is:', winner.created_by);
+
+                await resetWinnerTee(votedPair[winnerId]);
 
                 if (nextTee) {
-                    nextTee.votes = 0;
-                    await nextTee.save();
+                    await setupNextTee(nextTee);
 
                     socketIO
                         .to(room)
                         .emit('continue-voting', {
                             answer: 'Continue voting with new tees',
-                            payload: [votedPair[winnerId], nextTee]
+                            payload: [winner, nextTee]
                         });
                 } else {
                     socketIO
@@ -288,8 +276,8 @@ module.exports = function (socketIO) {
             });
 
             socket.on('request-winner-tee', async ({room}) => {
-                const winner = await Tee.findOne({room_id: room, has_lost: false}).where('votes').ne(null);
-                logger.info('Final winner is:', winner);
+                const winner = await getRoundWinner(room);
+                logger.info('Final winner is:', winner.created_by);
 
                 socketIO
                     .to(room)
