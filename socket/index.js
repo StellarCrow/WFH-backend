@@ -29,13 +29,12 @@ const {
     markLoserTee,
     resetWinnerTee
 } = require('./utilits');
-const {errors, successes} = require('./constants');
+const {errors, successes, MAX_PEERS_PER_CALL} = require('./constants');
 const awsService = require('../aws/awsService');
 
-// WebRTC stuff
-const peers = {}; // TODO: use Mongo
-const peerSocketToRoomCode = {}; // TODO: use Mongo
-const MAX_PEERS_PER_CALL = 6; // TODO: store in constants
+// WebRTC stuff, TODO: Store using mongoDB
+const peers = {};
+const peerSocketToRoomCode = {};
 
 module.exports = function (socketIO) {
     socketIO.on('connection', function (socket) {
@@ -224,7 +223,7 @@ module.exports = function (socketIO) {
 
                 socketIO
                     .to(room)
-                    .emit('send-vote-tees', {answer: 'Voting has started', payload: tees});
+                    .emit('send-vote-tees', {answer: successes.VOTING_STARTED, payload: tees});
             });
             socket.on('send-vote', async ({username, winner, room}) => {
                 logger.info('Voting for tee:', winner.created_by);
@@ -232,12 +231,12 @@ module.exports = function (socketIO) {
 
                 socketIO
                     .to(room)
-                    .emit('vote-sent', {answer: 'User has voted', payload: username});
+                    .emit('vote-sent', {answer: successes.USER_VOTED, payload: username});
             });
             socket.on('finish-voting', ({room, username}) => {
                 socketIO
                     .to(room)
-                    .emit('user-finish-voting', {answer: 'User finished voting', payload: username});
+                    .emit('user-finish-voting', {answer: successes.USER_FINISH_VOTING, payload: username});
             });
 
             socket.on('all-finish-voting', async ({room}) => {
@@ -261,14 +260,14 @@ module.exports = function (socketIO) {
                     socketIO
                         .to(room)
                         .emit('continue-voting', {
-                            answer: 'Continue voting with new tees',
+                            answer: successes.CONTINUE_VOTING,
                             payload: [winner, nextTee]
                         });
                 } else {
                     socketIO
                         .to(room)
                         .emit('stop-voting', {
-                            answer: 'All users finished voting',
+                            answer: successes.ALL_FULL_FINISH_VOTING,
                             payload: null
                         });
                 }
@@ -280,7 +279,7 @@ module.exports = function (socketIO) {
 
                 socketIO
                     .to(room)
-                    .emit('send-winner-tee', {answer: 'Sending the winner of the game!', payload: winner});
+                    .emit('send-winner-tee', {answer: successes.SEND_WINNER, payload: winner});
             });
 
             socket.on('disconnect', async () => {
@@ -339,7 +338,7 @@ module.exports = function (socketIO) {
                 if (peers[roomCode]) {
                     const length = peers[roomCode].length;
                     if (length >= MAX_PEERS_PER_CALL) {
-                        socket.emit('room full');
+                        socket.emit('room-full');
                         return;
                     }
                     peers[roomCode].push(socket.id);
@@ -352,7 +351,7 @@ module.exports = function (socketIO) {
                 logger.info(peerIDsInThisRoom);
 
                 socket.emit('all-peers', {
-                    answer: '[RTC] Sending all peers', // TODO: constant answer
+                    answer: successes.RTC_SEND_PEERS,
                     payload: {peerIDs: peerIDsInThisRoom},
                 });
             });
@@ -361,7 +360,7 @@ module.exports = function (socketIO) {
                 logger.info(userToSignal, '-->', callerID);
 
                 socketIO.to(userToSignal).emit('peer-joined', {
-                    answer: '[RTC] Sending signal', // TODO: constant answer
+                    answer: successes.RTC_SEND_SIGNAL,
                     payload: {signal, callerID},
                 });
             });
@@ -372,7 +371,7 @@ module.exports = function (socketIO) {
                 logger.info(callerID, '<--', id);
 
                 socketIO.to(callerID).emit('received-return-signal', {
-                    answer: '[RTC] Returning signal', // TODO: constant answer
+                    answer: successes.RTC_RETURN_SIGNAL,
                     payload: {signal, id},
                 });
             });
