@@ -252,10 +252,9 @@ module.exports = function (socketIO) {
                 const winner = await getRoundWinner(room);
                 logger.info('Winner of the round is:', winner.created_by);
 
-                await resetWinnerTee(votedPair[winnerId]);
-
                 if (nextTee) {
                     await setupNextTee(nextTee);
+                    await resetWinnerTee(votedPair[winnerId]);
 
                     socketIO
                         .to(room)
