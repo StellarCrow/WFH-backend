@@ -13,6 +13,8 @@ const savePhrase = require('./savePhrase');
 const createPairs = require('./createPairs');
 const distributeTee = require('./distributeTee');
 const startGame = require('./startGame');
+const saveTee = require('./saveTee');
+const getTeesByRoom = require('./getTeesByRoom');
 const removeUserFromRoom = require('./removeUserFromRoom');
 
 module.exports = {
@@ -30,6 +32,9 @@ module.exports = {
     savePhrase,
     createPairs,
     distributeTee,
+    startGame,
+    saveTee,
+    getTeesByRoom,
     startGame,
     removeUserFromRoom
 };
