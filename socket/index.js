@@ -19,8 +19,7 @@ const {
     startGame,
     distributeTee,
     saveTee,
-    getTeesByRoom,
-    removeUserFromRoom
+    removeUserFromRoom,
     setupTeePair,
     setupNextTee,
     voteForTee,

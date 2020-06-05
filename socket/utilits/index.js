@@ -43,7 +43,7 @@ module.exports = {
     startGame,
     saveTee,
     getTeesByRoom,
-    removeUserFromRoom
+    removeUserFromRoom,
     getTeesByRoom,
     setupTeePair,
     setupNextTee,
