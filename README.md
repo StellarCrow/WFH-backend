@@ -9,12 +9,12 @@
 
 ## Play From Home
 
-We are small indy game company, whose desire is to help You spend your free time during this long Lockdown and anytime in future after its end with your friends or help You make new ones. Our passion is to bring You bright emotions and feeling of crystal clear happiness from childhood. We present You our first game, which You can enjoy with up to 5 of your friends. Enjoy it, smile, laugh, create and remember, your happiness make the world prettier and more kind.
+We are a small indie game company, whose desire is to help You spend your free time with your friends during this lingering Lockdown or event help You make new ones. Our passion is to grant You with bright emotions and feelings of crystal clear happiness from your childhood. We present to You our first game (one of many more to come), which You can enjoy with up to 5 of your friends. Enjoy, smile, laugh, create and remember - your happiness makes the world a prettier place.
 
 <br>
 
 ## Demo
-Here is a working live demo, hope You will love it, since we are (wait a bit for heroku servers to wake up):  [PFH_game#1](https://real-super-cool-modern-app-wfh.herokuapp.com/)
+Here is a working live demo, hope You like it like we do! (wait a bit for Heroku servers to wake up): [PFH_game#1](https://real-super-cool-modern-app-wfh.herokuapp.com/)
 
 <br>
 
@@ -36,24 +36,24 @@ Here is a working live demo, hope You will love it, since we are (wait a bit for
 
 ## Installation
 
-To run our project You should have some tools to be installed on your PC, list and link of which You can find below:
+To run our project You should have some tools installed on your PC, which you can find in a list of links below:
 
 - [Download and install Git](https://git-scm.com/downloads)
 - [Download and install](https://nodejs.org/en/) latest LTS-version of Node.js
 - [Download and install MongoDB Community Server](https://www.mongodb.com/download-center/community)
 - [Install Angular](https://angular.io/cli)
 
-> After all the steps done You can go to Setup section 
+> After all the steps are done, You can go ahead to Setup section 
 
 <br>
 
 ## Setup 
 
-At first, we need to mention that our app has two parts [Front-end](https://github.com/StellarCrow/wfh-client) and [Back-end](https://github.com/StellarCrow/wfh-backend). It doesn't matter from which one You start, just don't forget to setup the second part.
+Firstly, we need to mention that our app has two modules: [Front-end](https://github.com/StellarCrow/wfh-client) and [Back-end](https://github.com/StellarCrow/wfh-backend). It doesn't matter which one You start off with, just don't forget to setup the second part.
 
-Now, my friend, You are at Back-end part, so let's setup it:
+Now, my friend, let's setup the Back-end part of the game:
 
-If this is your second part, skip first 3 points and go strictly to cloning yhe project
+If You've already gone through installing the Front-end part, you can skip the first 3 points and go straight to cloning the project.
 
 - Run `node -v` in console and make sure your version of Node.js is above `v8.11.3`
 - Run `npm -v` in console and make sure your version of npm is above `5.6.0`
@@ -64,7 +64,7 @@ If this is your second part, skip first 3 points and go strictly to cloning yhe 
 - Run `npm install` to install the dependencies
 - Run mongoDB
 - Run the server with command `npm run dev`
-- Voilà, if You already have setup [Front-end](https://github.com/StellarCrow/wfh-client) part enjoy the project, otherwise go to the setup section of the [second part.  ](https://github.com/StellarCrow/wfh-client)
+- Voilà! If You've already installed the [Front-end](https://github.com/StellarCrow/wfh-client) part, please enjoy the project. Otherwise, head on to the [next setup section.](https://github.com/StellarCrow/wfh-client)
 
 <br>
 
