@@ -15,6 +15,14 @@ const distributeTee = require('./distributeTee');
 const startGame = require('./startGame');
 const saveTee = require('./saveTee');
 const getTeesByRoom = require('./getTeesByRoom');
+const setupTeePair = require('./setupTeePair');
+const setupNextTee = require('./setupNextTee');
+const voteForTee = require('./voteForTee');
+const getVotedTeePair = require('./getVotedTeePair');
+const markLoserTee = require('./markLoserTee');
+const resetWinnerTee = require('./resetWinnerTee');
+const getRoundWinner = require('./getRoundWinner');
+const getNextTee = require('./getNextTee');
 
 module.exports = {
     roomsWhereUser,
@@ -33,5 +41,13 @@ module.exports = {
     distributeTee,
     startGame,
     saveTee,
-    getTeesByRoom
+    getTeesByRoom,
+    setupTeePair,
+    setupNextTee,
+    voteForTee,
+    getVotedTeePair,
+    markLoserTee,
+    resetWinnerTee,
+    getRoundWinner,
+    getNextTee
 };
