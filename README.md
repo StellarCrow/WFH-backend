@@ -9,7 +9,7 @@
 
 ## Play From Home
 
-We are a small indie game company, whose desire is to help You spend your free time with your friends during this lingering Lockdown or event help You make new ones. Our passion is to grant You with bright emotions and feelings of crystal clear happiness from your childhood. We present to You our first game (one of many more to come), which You can enjoy with up to 5 of your friends. Enjoy, smile, laugh, create and remember - your happiness makes the world a prettier place.
+We are a small indie game company, whose desire is to help You spend your free time with your friends during this lingering Lockdown or even help You make new ones. Our passion is to grant You with bright emotions and feelings of crystal clear happiness from your childhood. We present to You our first game (one of many more to come), which You can enjoy with up to 5 of your friends. Enjoy, smile, laugh, create and remember - your happiness makes the world a prettier place.
 
 <br>
 
