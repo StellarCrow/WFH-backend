@@ -1,6 +1,7 @@
 const log4js = require('log4js');
 const logger = log4js.getLogger();
 const {Room} = require('./schemas/room.schema');
+const {Tee} = require('./schemas/tee.schema');
 const {
     roomsWhereUser,
     errorHandler,
@@ -15,8 +16,10 @@ const {
     savePictureLinkInDB,
     savePhrase,
     createPairs,
+    startGame,
     distributeTee,
-    startGame
+    saveTee,
+    getTeesByRoom
 } = require('./utilits');
 const {errors, successes} = require('./constants');
 const awsService = require('../aws/awsService');
@@ -137,10 +140,9 @@ module.exports = function (socketIO) {
             socket.on('new-phrase', ({phrase, room}) => {
                 savePhrase(phrase, room, socket.id)
                     .then(_ => {
-                        socketIO.to(room)
-                            .emit('new-phrase-saved', {answer: successes.SAVE_PHRASE, payload: null});
+                        socket.emit('new-phrase-saved', {answer: successes.SAVE_PHRASE, payload: null});
                     })
-                    .catch(error => errorHandler(socket, errors.SAVE_PHRASE))
+                    .catch(error => errorHandler(socket, errors.SAVE_PHRASE));
             });
             socket.on('finish-phrases', ({room, username}) => {
                 socketIO.to(room)
@@ -164,10 +166,113 @@ module.exports = function (socketIO) {
                                 {answer: successes.PAIRS_CREATED, payload: user.tee});
                         })
                     } catch (error) {
-                        return errorHandler(socket, errors.PAIRS_SENDING)
+                        return errorHandler(socket, errors.PAIRS_SENDING);
                     }
                 }
             );
+            socket.on('new-tee', ({tee, room}) => {
+                const createdTee = saveTee(tee, room, socket.id);
+
+                new Tee(createdTee)
+                    .save()
+                    .then(_ => socket.emit('new-tee-created', {answer: successes.SAVE_TEE, payload: null}))
+                    .catch(error => errorHandler(socket, errors.SAVE_TEE));
+            });
+            socket.on('finish-matching', ({room, username}) => {
+                socketIO
+                    .to(room)
+                    .emit('user-finish-matching', {answer: successes.USER_FINISH_MATCHING, payload: username});
+            });
+            socket.on('all-finish-matching', ({room}) => {
+                socketIO
+                    .to(room)
+                    .emit('stop-matching', {answer: successes.ALL_FINISH_MATCHING, payload: null});
+            });
+
+            socket.on('start-voting', async ({room}) => {
+                logger.info('[Re-]Start voting');
+
+                // findTeePair and set their votes to 0
+                const tees = await Tee.find({room_id: room, has_lost: false});
+                tees[0].votes = 0;
+                tees[1].votes = 0;
+                await tees[0].save();
+                await tees[1].save();
+                
+                logger.info('> Start voting for tees:', tees.slice(0, 2).map(tee => tee.created_by));
+
+                socketIO
+                    .to(room)
+                    .emit('send-vote-tees', {
+                        answer: 'Voting has started',
+                        payload: tees.slice(0, 2)
+                    });
+            });
+            socket.on('send-vote', async ({username, winner, room}) => {
+                logger.info('Voting for tee:', winner.created_by);
+                // voteForTee
+                const {room_id, created_by} = winner;
+                await Tee.findOneAndUpdate({room_id, created_by}, {$inc: {votes: 1}});
+               
+                socketIO
+                    .to(room)
+                    .emit('vote-sent', {answer: 'User has voted', payload: username});
+            });
+            socket.on('finish-voting', ({room, username}) => {
+                socketIO
+                    .to(room)
+                    .emit('user-finish-voting', {answer: 'User finished voting', payload: username});
+            });
+
+            socket.on('all-finish-voting', async ({room}) => {
+                // getVoteTeePair - loser and winner
+                const votedPair = await Tee.find({room_id: room}).where('votes').ne(null).limit(2);
+
+                // markLoserTee
+                const loserId = votedPair[0].votes < votedPair[1].votes ? 0 : 1;
+                votedPair[loserId].has_lost = true;
+                await votedPair[loserId].save();
+
+                // findNewVirginTee
+                const nextTee = await Tee.findOne({room_id: room, has_lost: false, votes: null});
+                logger.info('Next contestor tee:', nextTee);
+
+                // resetWinnerTee
+                const winnerId = Number(!loserId);
+                votedPair[winnerId].votes = null;
+                await votedPair[winnerId].save();
+
+                const winner = await Tee.findOne({room_id: room, has_lost: false}).where('votes').ne(null);
+                logger.info('Winner of the round is:', winner);
+
+                if (nextTee) {
+                    nextTee.votes = 0;
+                    await nextTee.save();
+
+                    socketIO
+                        .to(room)
+                        .emit('continue-voting', {
+                            answer: 'Continue voting with new tees',
+                            payload: [votedPair[winnerId], nextTee]
+                        });
+                } else {
+                    socketIO
+                        .to(room)
+                        .emit('stop-voting', {
+                            answer: 'All users finished voting',
+                            payload: null
+                        });
+                }
+            });
+
+            socket.on('request-winner-tee', async ({room}) => {
+                const winner = await Tee.findOne({room_id: room, has_lost: false}).where('votes').ne(null);
+                logger.info('Final winner is:', winner);
+
+                socketIO
+                    .to(room)
+                    .emit('send-winner-tee', {answer: 'Sending the winner of the game!', payload: winner});
+            });
 
             socket.on('disconnect', async () => {
                 logger.info(`Disconnecting user ${socket.id}`);
