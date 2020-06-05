@@ -15,6 +15,7 @@ const distributeTee = require('./distributeTee');
 const startGame = require('./startGame');
 const saveTee = require('./saveTee');
 const getTeesByRoom = require('./getTeesByRoom');
+const removeUserFromRoom = require('./removeUserFromRoom');
 const setupTeePair = require('./setupTeePair');
 const setupNextTee = require('./setupNextTee');
 const voteForTee = require('./voteForTee');
@@ -41,6 +42,8 @@ module.exports = {
     distributeTee,
     startGame,
     saveTee,
+    getTeesByRoom,
+    removeUserFromRoom,
     getTeesByRoom,
     setupTeePair,
     setupNextTee,

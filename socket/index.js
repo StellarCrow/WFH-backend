@@ -19,6 +19,7 @@ const {
     startGame,
     distributeTee,
     saveTee,
+    removeUserFromRoom,
     setupTeePair,
     setupNextTee,
     voteForTee,
@@ -114,6 +115,27 @@ module.exports = function (socketIO) {
                 .catch((err) => errorHandler(socket, errors.START_GAME))
             });
 
+            socket.on('leave-room', async ({room, username}) => {
+                let creator = false;
+                const roomToLeave = await removeUserFromRoom(room, socket, username);
+                if (!roomToLeave) {
+                    return errorHandler(socket, errors.NO_SUCH_ROOM, room);
+                }
+
+                if(roomToLeave.created_by === socket.id) {
+                    creator = true;
+                    await deleteRoom(socket);
+                }
+
+                socket.leave(room);
+                socketIO
+                    .to(room)
+                    .emit('user-left-room', {
+                        answer: successes.USER_LEFT_ROOM,
+                        payload: {users: getUsersInRoom(roomToLeave), creator},
+                    });
+            });
+
             socket.on('user-loaded', ({room, username}) => {
                 socketIO
                     .to(room)
@@ -207,7 +229,7 @@ module.exports = function (socketIO) {
             socket.on('send-vote', async ({username, winner, room}) => {
                 logger.info('Voting for tee:', winner.created_by);
                 await voteForTee(winner);
-               
+
                 socketIO
                     .to(room)
                     .emit('vote-sent', {answer: 'User has voted', payload: username});

@@ -16,6 +16,7 @@ const PAIRS_CREATED = 'Pairs of picture and phrase were created!';
 const SAVE_TEE = 'New tee was saved!';
 const USER_FINISH_MATCHING = 'User finished creating their tee';
 const ALL_FINISH_MATCHING = 'All users finished creating their tees';
+const USER_LEFT_ROOM = 'User left room';
 
 module.exports = {
     USER_DISCONNECTED,
@@ -35,5 +36,6 @@ module.exports = {
     PAIRS_CREATED,
     SAVE_TEE,
     USER_FINISH_MATCHING,
-    ALL_FINISH_MATCHING
+    ALL_FINISH_MATCHING,
+    USER_LEFT_ROOM
 };
