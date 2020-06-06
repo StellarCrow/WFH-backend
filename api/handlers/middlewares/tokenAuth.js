@@ -2,7 +2,7 @@
 const jwt = require('jsonwebtoken');
 const config = require('config');
 
-const { secret } = config.get('JWT_SECRET');
+const secret = config.get('JWT_SECRET');
 const errorHandler = require('@utilits/errorHandler');
 const { JWT_HEADER } = require('@data/requestHeaders');
 const { ERROR } = require('@data/logs');
@@ -14,7 +14,7 @@ const tokenAuth = (req, res, next) => {
       throw new Error(ERROR.JWT_EXPIRED); // throw an error to have a 1 end point in function
     }
   } catch (error) {
-    return errorHandler(error.message, res);
+    return errorHandler(res, error.message);
   }
   next();
 };
