@@ -141,6 +141,7 @@ module.exports = function (socketIO) {
                     .emit('new-user-loaded', {answer: successes.USER_LOADED, payload: username});
             });
             socket.on('all-loaded', ({room}) => {
+                console.log("ALL USERS WAS LOADED");
                 socketIO
                     .to(room)
                     .emit('all-users-loaded', {answer: successes.ALL_USER_LOADED, payload: null});
@@ -230,7 +231,7 @@ module.exports = function (socketIO) {
                 await voteForTee(winner);
 
                 socketIO
-                    .to(room)
+                    .to(socket.id)
                     .emit('vote-sent', {answer: successes.USER_VOTED, payload: username});
             });
             socket.on('finish-voting', ({room, username}) => {
