@@ -5,6 +5,7 @@ const router = express.Router();
 
 const registerPostHandler = require('@authHandlers/registerPostHandler');
 const loginPostHandler = require('@authHandlers/loginPostHandler');
+const googleAuthPostHandler = require('@authHandlers/googleAuthPostHandler');
 
 router.post('/register', registerPostHandler);
 /**
@@ -77,4 +78,41 @@ router.post('/login', loginPostHandler);
  * }
  */
 
+router.post('/google', googleAuthPostHandler);
+
+/**
+ * @api {post} /api/auth/google  Google authentication
+ * @apiName Google Auth
+ * @apiGroup User
+ *
+ * @apiParam {Object} Credential User's credential
+ *
+ * @apiExample {Object} Object with user's credential example:
+ *{
+ * "email": "sometest@tmail.com",
+ * "firstName": "Example"
+ * "lastName": "Examplenko"
+ * "avatar": "https://path-to-avatar..."
+ *}
+ *
+ * @apiSuccess (200) {Object} Success-response Success response with  JWT token contained user id
+ *
+ * @apiSuccessExample {Object} Success response example:
+ * HTTP/1.1 200 OK
+ * {
+ * success: true,
+ * payload: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbiI6IjVlYmQxMzZmMTVkZWI4NTQ4MmNhMjY4M
+ * SIsImlhdCI6MTU4OTc5MTk3OCwiZXhwIjoxNTg5ODc4Mzc4fQ.VQAQ4oD9-MHDxcYcL2Aj4WuUQ3BS9rA-4SuDlklEnEI",
+ * status: "200 OK",
+ * }
+ * @apiError {Object} Error-response Login failed
+ *
+ * @apiErrorExample {Object} Error response example:
+ *     HTTP/1.1 400 Bad request
+ * {
+ *      success: false,
+ *      payload: null,
+ *      error: { status: "400 Bad request", message: "Google authenticate failed. Can no find such user!"}
+ * }
+ */
 module.exports = router;
