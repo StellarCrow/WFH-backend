@@ -71,7 +71,7 @@ module.exports = function (socketIO) {
                 });
             });
 
-            socket.on('new-user', async ({username, room}) => {
+            socket.on('new-user', async ({username, avatar, room}) => {
                 // Check if user is already present in any other room
                 const roomsWithUser = await roomsWhereUser(socket.id, username);
                 if (roomsWithUser.length) {
@@ -79,7 +79,7 @@ module.exports = function (socketIO) {
                     return checkForReconnection(socket, roomsWithUser.pop(), room);
                 }
 
-                const roomToJoin = await addUserToRoom(socket, room, username);
+                const roomToJoin = await addUserToRoom(socket, room, username, avatar);
                 if (!roomToJoin) {
                     return errorHandler(socket, errors.NO_SUCH_ROOM, room);
                 }

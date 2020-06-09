@@ -2,7 +2,9 @@ const {Room} = require('../schemas/room.schema');
 const log4js = require('log4js');
 const logger = log4js.getLogger();
 
-const addUserToRoom = async (socket, room, username) => {
+const addUserToRoom = async (socket, room, username, avatar) => {
+    console.dir(`{avatar, username}`);
+    console.dir({avatar, username});
     try {
         const result = await Room.findOneAndUpdate(
             { name: room, usersInRoom: { $lte: 5 } },
@@ -10,7 +12,8 @@ const addUserToRoom = async (socket, room, username) => {
                 $push: {
                     users: {
                         username,
-                        socketId: socket.id
+                        socketId: socket.id,
+                        avatar
                     },
                 },
                 $inc: { usersInRoom: +1 },
