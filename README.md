@@ -30,6 +30,7 @@ Here is a working live demo, hope You like it like we do! (wait a bit for Heroku
 - [Setup](#setup)
 - [Built with](#built-with)
 - [Team](#team)
+- [Documentation](#documentation)
 - [Support](#support)
 
 <br>
@@ -83,6 +84,14 @@ If You've already gone through installing the Front-end part, you can skip the f
 ---|---|---|---|---|---
 [Daria Diachuk](https://github.com/StellarCrow) |[Maksym Koval](https://github.com/maxonchil) |[Nataliia Mogylchuk](https://github.com/nmogylchuk)|[Denys Stetsenko](https://github.com/oddestdan) |[Oleksandr Bezdorozhev](https://github.com/lightcraf)|[Mykyta Hlukhov](https://github.com/nikitahlukhov)
 
+
+<br>
+
+## Documentation
+
+- [Front-end overview](https://wfh-test.s3.eu-north-1.amazonaws.com/documentation/overview.html)
+- [Back-end: http requests](https://wfh-test.s3.eu-north-1.amazonaws.com/doc/index.html)
+- [Back-end: sockets schema](https://wfh-test.s3.eu-north-1.amazonaws.com/socketSchema.html)
 
 <br>
 
