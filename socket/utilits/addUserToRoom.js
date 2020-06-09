@@ -3,8 +3,6 @@ const log4js = require('log4js');
 const logger = log4js.getLogger();
 
 const addUserToRoom = async (socket, room, username, avatar) => {
-    console.dir(`{avatar, username}`);
-    console.dir({avatar, username});
     try {
         const result = await Room.findOneAndUpdate(
             { name: room, usersInRoom: { $lte: 5 } },
