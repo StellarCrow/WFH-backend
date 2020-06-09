@@ -254,7 +254,6 @@ module.exports = function (socketIO) {
                 logger.info('Winner of the round is:', winner.created_by);
 
                 if (nextTee) {
-                    await setupNextTee(nextTee);
                     await resetWinnerTee(votedPair[winnerId]);
 
                     socketIO
